@@ -10,7 +10,7 @@ const nextConfig = {
                 pathname: '/stdmusic/**',
             },
         ],
-    }
+    },
 }
 
 module.exports = nextConfig
