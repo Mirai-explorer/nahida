@@ -76,7 +76,7 @@ const Player = ({tracks}:{tracks: Track[]}) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [isRotating, setIsRotating] = useState(false);
     // @ts-ignore
-    const [rotate, setRotate] = useState(React.CSSProperties);
+    const [rotate, setRotate] = useState("paused");
     const [size, setSize] = useState("default");
 
     // Destructure for conciseness
@@ -85,12 +85,14 @@ const Player = ({tracks}:{tracks: Track[]}) => {
         ];
 
     // Refs
-    const audioRef = useRef(new Audio(audioSrc));
+    const audioRef = useRef<HTMLAudioElement | undefined>(
+        typeof Audio !== "undefined" ? new Audio(audioSrc) : undefined
+    );
     const intervalRef = useRef(0);
     const isReady = useRef(false);
 
     // Destructure for conciseness
-    const { duration } = audioRef.current;
+    const { duration } = audioRef.current || { duration: 0 };
 
     const currentPercentage = duration
         ? `${(trackProgress / duration) * 100}%`
@@ -104,10 +106,10 @@ const Player = ({tracks}:{tracks: Track[]}) => {
         clearInterval(intervalRef.current);
 
         intervalRef.current = window.setInterval(() => {
-            if (audioRef.current.ended) {
+            if (audioRef.current!.ended) {
                 toNextTrack();
             } else {
-                setTrackProgress(audioRef.current.currentTime);
+                setTrackProgress(audioRef.current!.currentTime);
             }
         }, 100);
     };
@@ -122,7 +124,7 @@ const Player = ({tracks}:{tracks: Track[]}) => {
     const onScrubEnd = (value: number) => {
         // If not already playing, start
         console.log(value);
-        audioRef.current.currentTime = value;
+        audioRef.current!.currentTime = value;
         if (!isPlaying) {
             setIsPlaying(true);
         }
@@ -147,26 +149,26 @@ const Player = ({tracks}:{tracks: Track[]}) => {
 
     useEffect(() => {
         if (isPlaying) {
-            audioRef.current.play();
+            audioRef.current!.play();
             startTimer();
             setIsRotating(true);
         } else {
-            audioRef.current.pause();
+            audioRef.current!.pause();
             setIsRotating(false);
         }
     }, [isPlaying]);
 
     useEffect(() => {
         if (isRotating) {
-            setRotate({ animationPlayState: "running" });
+            setRotate("running");
         } else {
-            setRotate({ animationPlayState: "paused" });
+            setRotate("paused");
         }
     }, [isRotating]);
 
     // Handles cleanup and setup when changing tracks
     useEffect(() => {
-        audioRef.current.pause();
+        audioRef.current!.pause();
 
         audioRef.current = new Audio(audioSrc);
         setTrackProgress(audioRef.current.currentTime);
@@ -184,7 +186,7 @@ const Player = ({tracks}:{tracks: Track[]}) => {
     useEffect(() => {
         // Pause and clean up on unmount
         return () => {
-            audioRef.current.pause();
+            audioRef.current!.pause();
             clearInterval(intervalRef.current);
         };
     }, []);

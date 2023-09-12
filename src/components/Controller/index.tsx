@@ -98,8 +98,8 @@ const Controller = ({
                     } : {
     isPlaying : boolean,
     onPlayPauseClick: React.Dispatch<React.SetStateAction<boolean>>,
-    onPrevClick: Function,
-    onNextClick: Function}) => (
+    onPrevClick: React.MouseEventHandler<HTMLButtonElement>,
+    onNextClick: React.MouseEventHandler<HTMLButtonElement>}) => (
     <ControllerWrap>
         <ControllerInner>
             <Left>

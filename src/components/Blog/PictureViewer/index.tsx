@@ -2,12 +2,21 @@ import React, {useState} from 'react';
 import { EventEmitter } from 'ahooks/lib/useEventEmitter';
 
 type imageType = {
-
+    url: string,
+    height: number,
+    width: number,
+    format: string,
+    size: string,
+    crop: string | null,
+    is_user_set_cover: boolean,
+    image_id: string,
+    entity_type: string,
+    entity_id: string
 }
 
 const PictureViewer = ({ event$ } : { event$: EventEmitter<any> }) => {
     const [viewed, setViewed] = useState(false);
-    let images: object[] = [];
+    let images: imageType[] = [];
     event$.useSubscription(params => {
         setViewed(params.viewed)
         images = params.images

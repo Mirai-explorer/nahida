@@ -2,7 +2,7 @@ import Image from "next/image";
 import { styled, keyframes } from "styled-components";
 
 type propsType = {
-    rotate: boolean,
+    rotate: string,
     url: string,
     size: string,
     desc: string
@@ -51,7 +51,7 @@ const CoverWrap = styled.div`
 
 const Cover = (props: propsType) => {
     return (
-        <CoverWrap style={props.rotate}>
+        <CoverWrap style={{ animationPlayState: `${props.rotate}`}}>
             <Image
                 className="source"
                 src={props.url}

@@ -1,7 +1,7 @@
 interface IProps {
     fill?: string;
 }
-export default (props: IProps) => (
+const Next = (props: IProps) => (
     <svg
         className="icon-next"
         viewBox="0 0 1024 1024"
@@ -15,3 +15,5 @@ export default (props: IProps) => (
         <path d="M792.524 928.009l0-852.001c0-42.032 36.4-76.007 81.252-76.007 44.85000001 0 81.252 33.97500001 81.252 76.007l0 852.001c0 41.95499999-36.4 76.007-81.252 76.007s-81.252-34.051-81.252-76.007z"></path>
     </svg>
 );
+
+export default Next;

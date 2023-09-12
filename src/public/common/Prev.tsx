@@ -1,7 +1,8 @@
 interface IProps {
     fill?: string;
 }
-export default (props: IProps) => (
+
+const Prev = (props: IProps) => (
     <svg
         className="icon-prev"
         viewBox="0 0 1024 1024"
@@ -15,3 +16,5 @@ export default (props: IProps) => (
         <path d="M228.435 77.809v868.712c-3.889 42.573-39.416 75.664-82.673 75.664s-78.784-33.091-82.649-75.34l-0.024-869.036c2.811-43.55 38.822-77.809 82.835-77.809s80.024 34.259 82.822 77.564z"></path>
     </svg>
 );
+
+export default Prev;

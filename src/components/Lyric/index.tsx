@@ -75,8 +75,7 @@ const Line =
 
 const Lyric = ({ trackIndex, trackProgress, isPlaying }:{ trackIndex: number, trackProgress: number, isPlaying: boolean }) => {
     const [number, setNumber] = useState(0);
-    const target = React.createRef();
-    const bubble = React.createRef();
+    const target: React.RefObject<HTMLDivElement> = React.createRef();
     const parseLrc = (str: string) => {
         const regex : RegExp = /^\[(?<time>\d{2}:\d{2}(.\d{2})?)\](?<text>.*)/;
         const lines : string[] | null = str.split("\n");
@@ -123,10 +122,8 @@ const Lyric = ({ trackIndex, trackProgress, isPlaying }:{ trackIndex: number, tr
     };
 
     useEffect(() => {
-        // @ts-ignore
-        setNumber(syncLyric(lyric, trackProgress));
-        // @ts-ignore
-        target.current.scrollTop = 40 * number;
+        setNumber(syncLyric(lyric, trackProgress) as number);
+        target.current !== null ? target.current.scrollTop = 40 * number : null;
     }, [trackProgress]);
 
     return (
