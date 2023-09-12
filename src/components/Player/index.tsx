@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import React, { useState, useEffect, useRef } from "react";
 import Title from "@/components/Title";
 import Cover from "@/components/Cover";
@@ -77,7 +77,7 @@ const Player = ({tracks}:{tracks: Track[]}) => {
     const [isRotating, setIsRotating] = useState(false);
     // @ts-ignore
     const [rotate, setRotate] = useState("paused");
-    const [size, setSize] = useState("default");
+    //const [size, setSize] = useState("default");
 
     // Destructure for conciseness
     const { title, subtitle, artist, color, image, audioSrc } = tracks[

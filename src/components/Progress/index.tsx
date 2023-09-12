@@ -100,7 +100,7 @@ const Progress = (props: propsType) => {
                     value={props.trackProgress}
                     step="0.5"
                     min="0"
-                    max={props.duration ? props.duration : `${props.duration}`}
+                    max={props.duration ? props.duration : `100`}
                     onChange={(e) => props.onScrub(e.target.value)}
                     onMouseUp={(e) => props.onScrubEnd((e.target as HTMLInputElement).value)}
                     onKeyUp={(e) => props.onScrubEnd((e.target as HTMLInputElement).value)}
