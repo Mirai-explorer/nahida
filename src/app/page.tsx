@@ -1,13 +1,24 @@
-import tracks from "../public/data/tracks";
-import dynamic from "next/dynamic";
+"use client"
+import HomeHeader from "@/components/Home/Header";
+import HomeAside from "@/components/Home/Aside";
+import HomeMain from "@/components/Home/Main";
+import HomeFooter from "@/components/Home/Footer";
+import { store } from './store';
+import { Provider } from 'react-redux';
 
-const Player = dynamic(() => import("@/components/Player"), {
-    ssr: false
-});
 
-function App() {
+const App = () => {
     return (
-        <Player tracks={tracks} />
+        <Provider store={store}>
+                <div className="app text-[#171717]">
+                    <HomeHeader></HomeHeader>
+                    <HomeAside></HomeAside>
+                    <HomeMain>
+
+                    </HomeMain>
+                    <HomeFooter></HomeFooter>
+                </div>
+        </Provider>
     )
 }
 

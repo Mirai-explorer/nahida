@@ -100,7 +100,7 @@ const Lyric = ({ trackIndex, trackProgress, isPlaying }:{ trackIndex: number, tr
         return output;
     };
 
-    const lyric = parseLrc(tracks[trackIndex].lyrics);
+    const lyric = parseLrc(tracks[trackIndex].lyric);
 
     type lyricType = {
         offset: number,

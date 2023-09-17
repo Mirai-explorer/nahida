@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import { EventEmitter } from 'ahooks/lib/useEventEmitter';
+import Image from "next/image";
 
 interface articleProps {
     post: {
@@ -145,7 +146,7 @@ const Card = ({ article, event$ } : { article: articleProps, event$: EventEmitte
                     <div className="card__user flex items-center">
                         <a href={links.user.ACCOUNT_LINK_PREFIX+article.user.uid} className="card__link inline-flex items-center text-gray-600">
                             <div className="card__avatar flex-shrink-0 w-6 h-6">
-                                <img src={article.user.avatar_url} alt="" className="avatar__img align-top rounded-full w-full h-full" />
+                                <Image src={article.user.avatar_url} alt="a blog image" className="avatar__img align-top rounded-full w-full h-full" width={300} height={300} loading={"lazy"} />
                             </div>
                         </a>
                     </div>

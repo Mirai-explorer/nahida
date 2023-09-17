@@ -1,5 +1,7 @@
-import React, {useState} from 'react';
+import React, {Suspense, useState} from 'react';
 import { EventEmitter } from 'ahooks/lib/useEventEmitter';
+import Image from 'next/image';
+import Loading from "@/app/blog/loading";
 
 type imageType = {
     url: string,
@@ -31,7 +33,8 @@ const PictureViewer = ({ event$ } : { event$: EventEmitter<any> }) => {
                 <div className="scroll-container">
                     {images.map(item => (
                         <div className="scroll__item" key={item.image_id}>
-                            <img src={item.url} />
+                            <Loading count={images.length} />
+                            <Image src={item.url} alt="a blog image" width={"300"} height={300} />
                         </div>
                     ))}
                 </div>
