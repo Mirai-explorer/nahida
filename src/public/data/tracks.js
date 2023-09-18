@@ -11,6 +11,8 @@ export default [
         album_id: "28378420",
         code: "CA731EA1E9A9C7FF263CD61514920885",
         timestamp: 0,
+        unique_index: 1,
+        time_length: 139520
     },
     {
         title: "かくしん的☆めたまるふぉ~ぜっ!",
@@ -24,6 +26,8 @@ export default [
         album_id: "550840",
         code: "91FDF8D43EB1457CAD4DC6327E009FC1",
         timestamp: 0,
+        unique_index: 2,
+        time_length: 117986
     },
     {
         title: "Snow Fairy Story",
@@ -37,5 +41,7 @@ export default [
         album_id: "15756787",
         code: "73A433E8CA4D8D12E655D5C9B985BBDC",
         timestamp: 0,
+        unique_index: 3,
+        time_length: 273266
     }
 ];

@@ -4,7 +4,7 @@ export const DBConfig = {
     objectStoresMeta: [
         {
             store: "playlist",
-            storeConfig: { keyPath: "album_id", autoIncrement: false },
+            storeConfig: { keyPath: "unique_index", autoIncrement: false },
             storeSchema: [
                 { name: "title", keypath: "title", options: { unique: false } },
                 { name: "subtitle", keypath: "subtitle", options: { unique: false } },
@@ -12,6 +12,8 @@ export const DBConfig = {
                 { name: "code", keypath: "code", options: { unique: false } },
                 { name: "album_id", keypath: "album_id", options: { unique: true } },
                 { name: "timestamp", keypath: "timestamp", options: { unique: false } },
+                { name: "time_length", keypath: "time_length", options: { unique: false } },
+                { name: "unique_index", keypath: "unique_index", options: { unique: true } },
                 { name: "cover", keypath: "cover", options: { unique: false } },
                 { name: "artist", keypath: "artist", options: { unique: false } },
                 { name: "lyric", keypath: "lyric", options: { unique: false } },

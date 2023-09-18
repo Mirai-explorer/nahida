@@ -14,6 +14,8 @@ import cookie from "react-cookies";
 import axios from "axios";
 import Md5 from 'crypto-js/md5';
 import { v4 as uuidv4 } from 'uuid';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 initDB(DBConfig);
 
@@ -26,7 +28,9 @@ type Track = {
     lyric: string,
     album_id: string,
     code: string,
-    timestamp: number
+    timestamp: number,
+    unique_index: number,
+    time_length: number
 }
 
 // 样式
@@ -92,9 +96,10 @@ const Player = () => {
     // @ts-ignore
     const [rotate, setRotate] = useState("paused");
     const [size, setSize] = useState("default");
+    const [updated, setUpdated] = useState(false);
 
     // Destructure for conciseness
-    const {title, subtitle, artist, cover, src} = tracks[trackIndex];
+    const {title, subtitle, artist, cover, src, time_length} = tracks[trackIndex];
 
     // Refs
     const audioRef = useRef<HTMLAudioElement | undefined>(
@@ -135,8 +140,8 @@ const Player = () => {
 
     const onScrubEnd = (value: number) => {
         // If not already playing, start
-        console.log(value);
-        audioRef.current!.currentTime = value;
+        console.log(value, time_length);
+        audioRef.current!.currentTime = value > time_length / 1000 ? audioRef.current!.currentTime : value;
         if (!isPlaying) {
             setIsPlaying(true);
         }
@@ -159,8 +164,21 @@ const Player = () => {
         }
     };
 
-    const fetchMusicSource = (data: Track) => {
-        const handleUpdate = (res: { data:{ play_url: string | undefined; } }) => {
+    const notify = (string: string) => toast(string);
+
+    const setUpdatedTracks = () => {
+        getAll().then((_tracks) => {
+            console.log('tracks check once again:',_tracks)
+            if (_tracks.length > 0) {
+                setTracks(_tracks);
+                setTrackIndex(trackIndex);
+                setUpdated(!updated);
+            }
+        });
+    }
+
+    const fetchMusicSource = (data: Track, isLast: boolean) => {
+        const handleUpdate = (res: { data:{ play_url: string | undefined; } }, isLast: boolean) => {
             let regex = /^(http|https):\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?$/;
             console.log(res)
             if (typeof res.data.play_url === 'string' && regex.test(res.data.play_url)) {
@@ -173,12 +191,14 @@ const Player = () => {
                     lyric: data.lyric,
                     album_id: data.album_id,
                     code: data.code,
-                    timestamp: new Date().getTime()+86400000 })
+                    timestamp: new Date().getTime()+86400000,
+                    unique_index: data.unique_index,
+                    time_length: data.time_length })
                     .then(() => {
-                        getAll().then((tracks) => {
-                            console.log(tracks,trackIndex)
-                            setTracks(tracks);
-                        });
+                        console.log('Track source updates completed.')
+                        if (isLast) {
+                            setUpdatedTracks();
+                        }
                     })
             } else {
                 throw new Error("Can't fetch the source")
@@ -196,10 +216,10 @@ const Player = () => {
             }
         }).then(response => {
             if (response.status >= 200 && response.status < 300) {
-                handleUpdate(response.data)
+                handleUpdate(response.data, isLast)
             }
         }).catch(error => {
-            console.error(error)
+            console.error('Failed to fetch latest data.', error)
         }).finally(() => {
             console.log('Fetch completed.')
         })
@@ -208,38 +228,36 @@ const Player = () => {
     useEffect(() => {
         getAll()
             .then((tracks: Track[]) => {
-                (tracks.length === 0) &&
-                    tracks0.map(item => {
-                        add(item).then(
-                            (event) => {
-                                console.log(tracks0.length+" added")
-                                fetchMusicSource({...item})
-                            },
-                            (error) => {
-                                console.error(error)
-                            },
-                        );
-                    });
-                console.log(tracks)
-                return tracks;
-            })
-            .then(tracks => {
+                console.log('tracks check:',tracks)
                 const time = new Date().getTime();
                 cookie.save('kg_mid', Md5(uuidv4()), { maxAge: 86400 });
-                (tracks.length > 0) &&
-                tracks.map((item) => {
-                    (item.timestamp < time) &&
-                    fetchMusicSource({...item})
-                    console.log(item)
-                });
+                if (tracks.length > 0) {
+                    tracks.map((item, index, array) => {
+                        if (item.timestamp >= time) {
+                            setUpdatedTracks();
+                        } else {
+                            fetchMusicSource({...item}, index + 1 === array.length)
+                        }
+                    });
+                } else {
+                    tracks0.map((item, index, array) => {
+                        fetchMusicSource({...item}, index + 1 === array.length)
+                    });
+                }
             })
     }, []);
 
     useEffect(() => {
         if (isPlaying) {
-            audioRef.current!.play();
-            startTimer();
-            setIsRotating(true);
+            audioRef.current!.play()
+                .then(() => {
+                    startTimer();
+                    setIsRotating(true);
+                })
+                .catch((e) => {
+                    notify("当前浏览器禁止自动播放，请手动点击播放按钮");
+                    console.error("Autoplay is forbidden!",e)
+                });
         } else {
             audioRef.current!.pause();
             setIsRotating(false);
@@ -259,16 +277,21 @@ const Player = () => {
         audioRef.current!.pause();
         audioRef.current = new Audio(src);
         setTrackProgress(audioRef.current.currentTime);
-
         if (isReady.current) {
-            audioRef.current.play();
-            setIsPlaying(true);
-            startTimer();
+            audioRef.current.play()
+                .then(() => {
+                    setIsPlaying(true);
+                    startTimer();
+                })
+                .catch((e) => {
+                    notify("当前浏览器禁止自动播放，请手动点击播放按钮");
+                    console.error("Autoplay is forbidden!",e)
+                });
         } else {
             // Set the isReady ref as true for the next pass
             isReady.current = true;
         }
-    }, [trackIndex]);
+    }, [trackIndex, updated]);
 
     useEffect(() => {
         // Pause and clean up on unmount
@@ -280,19 +303,18 @@ const Player = () => {
 
     const getTime = (type: number) => {
         let timeDisplay = Math.floor(type);
-        let min = timeDisplay / 60;
-        // @ts-ignore
-        let mins: number | string = parseInt(min);
-        if (mins < 10) {
+        let min = !Number.isNaN(timeDisplay) ? timeDisplay / 60 : -1;
+        let mins: number | string = min | 0;
+        if (mins >= 0 && mins < 10) {
             mins = "0" + mins;
-        } else if (isNaN(mins)) {
+        } else if (mins === -1) {
             mins = "--";
         }
-        let sec = timeDisplay % 60;
-        let secs: number | string = Math.round(sec);
-        if (secs < 10) {
+        let sec = !Number.isNaN(timeDisplay) ? timeDisplay % 60 : -1;
+        let secs: number | string = sec | 0;
+        if (secs >= 0 && secs < 10) {
             secs = "0" + secs;
-        } else if (isNaN(secs)) {
+        } else if (secs === -1) {
             secs = "--";
         }
         return mins + ":" + secs;
@@ -312,7 +334,7 @@ const Player = () => {
                 <Cover
                     rotate={rotate}
                     url={cover}
-                    size="default"
+                    data-size="mini"
                     desc="音乐专辑封面"
                 />
                 <Lyric

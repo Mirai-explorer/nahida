@@ -85,8 +85,6 @@ const ProgressBarObject =
     `
 
 const Progress = (props: propsType) => {
-
-
     return (
         <ProgressWrap>
             <Digits>

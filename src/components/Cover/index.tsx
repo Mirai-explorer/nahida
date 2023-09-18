@@ -4,7 +4,7 @@ import { styled, keyframes } from "styled-components";
 type propsType = {
     rotate: string,
     url: string,
-    size: string,
+    ['data-size']: string,
     desc: string
 };
 
@@ -33,17 +33,17 @@ const CoverWrap = styled.div`
         border-radius: inherit;
       }
 
-      .source[sizes="large"] {
+      .source[data-size="large"] {
         width: 75vw;
         height: 75vw;
       }
 
-      .source[sizes="default"] {
+      .source[data-size="default"] {
         width: 50vw;
         height: 50vw;
       }
 
-      .source[sizes="mini"] {
+      .source[data-size="mini"] {
         width: 25vw;
         height: 25vw;
       }
@@ -55,7 +55,7 @@ const Cover = (props: propsType) => {
             <Image
                 className="source"
                 src={props.url}
-                sizes={props.size}
+                data-size={props["data-size"]}
                 alt={props.desc}
                 width="320"
                 height="320"
