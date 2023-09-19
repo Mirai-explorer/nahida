@@ -43,7 +43,7 @@ const MiraiPlayer = styled.div.attrs((/* props */) => ({ tabIndex: 0 }))`
       width: 100%;
       height: 100%;
       overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Arial, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif;
+      font-family: -apple-system,BlinkMacSystemFont,"SF Pro SC",PingFang SC,Helvetica Neue,Microsoft YaHei,Source Han Sans SC,Noto Sans CJK SC,WenQuanYi Micro Hei,sans-serif;
       -webkit-font-smoothing: antialiased;
       -webkit-tap-highlight-color: transparent;
       
@@ -85,7 +85,7 @@ const Layout = styled.div`
       }
 `
 
-const Player = () => {
+const Player = async() => {
     const { add, deleteRecord, update, getAll } = useIndexedDB("playlist");
     // State
     const [tracks, setTracks] = useState(tracks0);
