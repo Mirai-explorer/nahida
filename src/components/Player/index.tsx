@@ -85,7 +85,7 @@ const Layout = styled.div`
       }
 `
 
-const Player = async() => {
+const Player = () => {
     const { add, deleteRecord, update, getAll } = useIndexedDB("playlist");
     // State
     const [tracks, setTracks] = useState(tracks0);

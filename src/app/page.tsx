@@ -226,9 +226,9 @@ const App = () => {
                                             GTA系列<br />
                                             生化危机系列<br />
                                             刺客信条系列<br />
-                                            プリンセスコネクト&nbsp;Re:&nbsp;Dive&nbsp;｜&nbsp;公主连结<br />
+                                            プリンセスコネクト Re:Dive ｜ 公主连结<br />
                                             ウマ娘<br />
-                                            プロジェクト&nbsp;セカイ&nbsp;｜&nbsp;BanG&nbsp;Dream<br />
+                                            プロジェクト セカイ ｜ BanG Dream<br />
                                             碧蓝航线<br />
                                             ブルーアーカイブ<br />
                                             ——<br />
@@ -433,7 +433,7 @@ const App = () => {
                                                 Web开发方向&nbsp;[<br />
                                                 Next.js&nbsp;on&nbsp;React(Priority)<br />
                                                 Nuxt.js&nbsp;on&nbsp;Vue.js<br />
-                                                Vanilla&nbsp;JavaScript[ES2021]+CSS3+HTML5<br />
+                                                Vanilla&nbsp;JavaScript[ES2021]<br />
                                                 ]<br />
                                                 原生/桌面/服务器开发方向&nbsp;[<br />
                                                 Kotlin<br />
