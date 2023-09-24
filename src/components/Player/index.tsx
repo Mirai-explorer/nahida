@@ -61,6 +61,19 @@ const MiraiPlayer = styled.div.attrs((/* props */) => ({ tabIndex: 0 }))`
       input, button, ul, li {
         -webkit-appearance: none;
       }
+
+        &::after {
+          background: linear-gradient( 135deg, #3C8CE7 10%, #00EAFF 100%);
+          width: 100%;
+          height: 100%;
+          content: "";
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          z-index: -1;
+        }
 `
 
 const Layout = styled.div`
@@ -71,19 +84,8 @@ const Layout = styled.div`
       height: 100%;
       margin: 0;
       color: white;
-
-      &::before {
-        background: linear-gradient( 135deg, #3C8CE7 10%, #00EAFF 100%);
-        width: 100%;
-        height: 100%;
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: -1;
-      }
+      backdrop-filter: blur(8px) brightness(0.9);
+      text-shadow: 1px 1px 2px #00000030;
 `
 
 const Player = () => {
@@ -344,7 +346,7 @@ const Player = () => {
     const _duration = getTime(duration);
 
     return (
-        <MiraiPlayer>
+        <MiraiPlayer className={`bg-cover bg-center bg-no-repeat transition-all duration-300 ease-out`} style={{backgroundImage: `url(${tracks[trackIndex].cover})`}}>
             <Layout>
                 <Title
                     title={title || "音乐感动生活"}
