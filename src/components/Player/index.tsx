@@ -1,10 +1,11 @@
 "use client";
 import React, {useEffect, useRef, useState} from "react";
-import Title from "@/components/Title";
-import Cover from "@/components/Cover";
-import Lyric from "@/components/Lyric";
-import Progress from "@/components/Progress";
-import Controller from "@/components/Controller";
+import Title from "./Title";
+import Cover from "./Cover";
+import Lyric from "./Lyric";
+import Progress from "./Progress";
+import Controller from "./Controller";
+import Search from "./Search";
 import "../bundle.css";
 import styled from 'styled-components';
 import {DBConfig} from "@/app/IDBConfig";
@@ -97,6 +98,7 @@ const Player = () => {
     const [rotate, setRotate] = useState("paused");
     const [size, setSize] = useState("default");
     const [updated, setUpdated] = useState(false);
+    const [isShowing, setIsShowing] = useState(false);
 
     // Destructure for conciseness
     const {title, subtitle, artist, cover, src, time_length} = tracks[trackIndex];
@@ -177,35 +179,8 @@ const Player = () => {
         });
     }
 
-    const fetchMusicSource = (data: Track, isLast: boolean) => {
-        const handleUpdate = (res: { data:{ play_url: string | undefined; } }, isLast: boolean) => {
-            let regex = /^(http|https):\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?$/;
-            console.log(res)
-            if (typeof res.data.play_url === 'string' && regex.test(res.data.play_url)) {
-                update({
-                    title: data.title,
-                    subtitle: data.subtitle,
-                    artist: data.artist,
-                    src: res.data.play_url,
-                    cover: data.cover,
-                    lyric: data.lyric,
-                    album_id: data.album_id,
-                    code: data.code,
-                    timestamp: new Date().getTime()+86400000,
-                    unique_index: data.unique_index,
-                    time_length: data.time_length })
-                    .then(() => {
-                        console.log('Track source updates completed.')
-                        if (isLast) {
-                            setUpdatedTracks();
-                        }
-                    })
-            } else {
-                throw new Error("Can't fetch the source")
-            }
-        }
-        console.log(cookie.load('kg_mid'))
-        axios.get('https://bird.ioliu.cn/v1?url=https://wwwapi.kugou.com/yy/index.php', {
+    const fetchMusicSource = async(data: Track) => {
+        return axios.get('https://bird.ioliu.cn/v1?url=https://wwwapi.kugou.com/yy/index.php', {
             params: {
                 r: 'play/getdata',
                 hash: data.code,
@@ -214,16 +189,39 @@ const Player = () => {
                 mid: cookie.load('kg_mid'),
                 platid: 4
             }
-        }).then(response => {
-            if (response.status >= 200 && response.status < 300) {
-                handleUpdate(response.data, isLast)
-            }
-        }).catch(error => {
-            console.error('Failed to fetch latest data.', error)
-        }).finally(() => {
-            console.log('Fetch completed.')
         })
     } //[INVOLVE]获取歌曲源
+
+    const handleUpdate = (res: { data:{ play_url: string | undefined; } }, isLast: boolean, raw: Track) => {
+        let regex = /^(http|https):\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?$/;
+        console.log(res)
+        if (typeof res.data.play_url === 'string' && regex.test(res.data.play_url)) {
+            update({
+                title: raw.title,
+                subtitle: raw.subtitle,
+                artist: raw.artist,
+                src: res.data.play_url,
+                cover: raw.cover,
+                lyric: raw.lyric,
+                album_id: raw.album_id,
+                code: raw.code,
+                timestamp: new Date().getTime()+86400000,
+                unique_index: raw.unique_index,
+                time_length: raw.time_length })
+                .then(() => {
+                    console.log('Track source updates completed.')
+                    if (isLast) {
+                        setUpdatedTracks();
+                    }
+                })
+        } else {
+            throw new Error("Can't fetch the source")
+        }
+    }
+
+    const switchSerach = () => {
+        setIsShowing(true)
+    }
 
     useEffect(() => {
         getAll()
@@ -236,12 +234,34 @@ const Player = () => {
                         if (item.timestamp >= time) {
                             setUpdatedTracks();
                         } else {
-                            fetchMusicSource({...item}, index + 1 === array.length)
+                            fetchMusicSource({...item})
+                                .then(res => {
+                                    if (res.status >= 200 && res.status < 300) {
+                                        handleUpdate(res.data, index + 1 === array.length, {...item})
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Failed to fetch latest data.', error)
+                                })
+                                .finally(() => {
+                                    console.log('Fetch completed.')
+                                })
                         }
                     });
                 } else {
                     tracks0.map((item, index, array) => {
-                        fetchMusicSource({...item}, index + 1 === array.length)
+                        fetchMusicSource({...item})
+                            .then(res => {
+                                if (res.status >= 200 && res.status < 300) {
+                                    handleUpdate(res.data, index + 1 === array.length, {...item})
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Failed to fetch latest data.', error)
+                            })
+                            .finally(() => {
+                                console.log('Fetch completed.')
+                            })
                     });
                 }
             })
@@ -336,6 +356,7 @@ const Player = () => {
                     url={cover}
                     data-size="mini"
                     desc="音乐专辑封面"
+                    onDoubleClick={switchSerach}
                 />
                 <Lyric
                     trackIndex={trackIndex}
@@ -356,6 +377,10 @@ const Player = () => {
                     onPrevClick={toPrevTrack}
                     onNextClick={toNextTrack}
                     onPlayPauseClick={setIsPlaying}
+                />
+                <Search
+                    isShowing={isShowing}
+                    setIsShowing={setIsShowing}
                 />
             </Layout>
         </MiraiPlayer>

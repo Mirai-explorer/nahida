@@ -1,8 +1,8 @@
 import React from "react";
-import Play from "../../public/common/Play";
-import Pause from "../../public/common/Pause";
-import Next from "../../public/common/Next";
-import Prev from "../../public/common/Prev";
+import Play from "../../../public/common/Play";
+import Pause from "../../../public/common/Pause";
+import Next from "../../../public/common/Next";
+import Prev from "../../../public/common/Prev";
 import { styled, keyframes } from "styled-components";
 
 const ControllerWrap =

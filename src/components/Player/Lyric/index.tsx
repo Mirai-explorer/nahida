@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import tracks from "../../public/data/tracks";
+import tracks from "../../../public/data/tracks";
 import styled from "styled-components";
 
 const LyricWrap =

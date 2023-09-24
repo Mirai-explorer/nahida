@@ -1,7 +1,8 @@
 import Image from "next/image";
 import { styled, keyframes } from "styled-components";
+import React from "react";
 
-type propsType = {
+interface propsType extends React.InputHTMLAttributes<HTMLInputElement> {
     rotate: string,
     url: string,
     ['data-size']: string,
@@ -51,7 +52,7 @@ const CoverWrap = styled.div`
 
 const Cover = (props: propsType) => {
     return (
-        <CoverWrap style={{ animationPlayState: `${props.rotate}`}}>
+        <CoverWrap style={{ animationPlayState: `${props.rotate}`}} onDoubleClick={props.onDoubleClick}>
             <Image
                 className="source"
                 src={props.url}
