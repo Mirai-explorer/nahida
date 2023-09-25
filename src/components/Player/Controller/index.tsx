@@ -1,9 +1,13 @@
 import React from "react";
-import Play from "../../../public/common/Play";
-import Pause from "../../../public/common/Pause";
-import Next from "../../../public/common/Next";
-import Prev from "../../../public/common/Prev";
+import Play from "@/public/common/Play";
+import Pause from "@/public/common/Pause";
+import Next from "@/public/common/Next";
+import Prev from "@/public/common/Prev";
+import SongList from "@/public/common/SongList";
 import { styled, keyframes } from "styled-components";
+import Loop from "@/public/common/Loop";
+import Random from "@/public/common/Random";
+import SingleCycle from "@/public/common/SingleCycle";
 
 const ControllerWrap =
     styled.div`
@@ -36,8 +40,8 @@ const Left =
       align-items: center;
       
       > button {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
       }
     `
 const Center =
@@ -78,10 +82,7 @@ const Center =
 const Right =
     styled(Left)`
     `
-const Loop =
-    styled.div`
-        
-    `
+
 const Button =
     styled.button`
       -webkit-appearance: none;
@@ -90,20 +91,34 @@ const Button =
       cursor: pointer;
     `
 
-const Controller = ({
-                        isPlaying,
-                        onPlayPauseClick,
-                        onPrevClick,
-                        onNextClick
-                    } : {
+const Controller = ({ isPlaying, onPlayPauseClick, onPrevClick, onNextClick} : {
     isPlaying : boolean,
     onPlayPauseClick: React.Dispatch<React.SetStateAction<boolean>>,
     onPrevClick: React.MouseEventHandler<HTMLButtonElement>,
-    onNextClick: React.MouseEventHandler<HTMLButtonElement>}) => (
+    onNextClick: React.MouseEventHandler<HTMLButtonElement>
+}) => (
     <ControllerWrap>
         <ControllerInner>
             <Left>
-                <Loop />
+                {isPlaying ? (
+                    <Button
+                        type="button"
+                        className="loop"
+                        onClick={() => onPlayPauseClick(false)}
+                        aria-label="Loop"
+                    >
+                        <Loop />
+                    </Button>
+                ) : (
+                    <Button
+                        type="button"
+                        className="random"
+                        onClick={() => onPlayPauseClick(true)}
+                        aria-label="Random"
+                    >
+                        <SingleCycle />
+                    </Button>
+                )}
             </Left>
             <Center>
                 <Button
@@ -143,7 +158,14 @@ const Controller = ({
                 </Button>
             </Center>
             <Right>
-
+                <Button
+                    type="button"
+                    className="songlist"
+                    aria-label="SongList"
+                    onClick={onNextClick}
+                >
+                    <SongList />
+                </Button>
             </Right>
         </ControllerInner>
     </ControllerWrap>

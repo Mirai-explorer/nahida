@@ -1,13 +1,18 @@
-import {styled} from "styled-components";
-import React, {SetStateAction} from "react";
+import { styled } from "styled-components";
+import React, { SetStateAction } from "react";
 import axios from "axios";
+import { Track, fetchMusicSource } from "@/components/Player/utils"
+import Kugou from "@/public/common/Kugou";
+import SearchIcon from "@/public/common/Search";
 
 type resultType = {
     FileName: string,
     FileHash: string,
     AlbumID: string,
     AlbumName: string,
-    Duration: number
+    Duration: number,
+    OriSongName: string,
+    Auxiliary: string
 }
 
 const SearchWrap =
@@ -52,34 +57,49 @@ const SearchCard =
 const SearchCardTitle =
     styled.div`
       display: flex;
-      justify-content: space-between;
       align-items: center;
       width: 100%;
       height: 40px;
+      gap: 16px;
+    `
+
+const SearchGroup =
+    styled.div`
+      display: flex;
+      width: 100%;
+      position: relative;
+    `
+
+const SearchCardSwitch =
+    styled.div`
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 40px;
+      border-radius: 24px 0 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     `
 
 const SearchCardInput =
     styled.input`
-      border-radius: .5rem !important;
+      border-radius: 999px !important;
       font-size: 16px !important;
-      padding: 4px 12px;
-      width: 50vw;
+      padding: 4px 32px 4px 40px;
+      width: 100%;
       transition: all .1s ease-in;
-
-      &:focus {
-        background: rgba(196, 196, 196, 0.15);
-      }
+      background: rgba(196, 196, 196, 0.15);
     `
 
 const SearchCardButton =
-    styled.input`
-      padding: 4px 16px;
-      border-radius: .5rem;
-      letter-spacing: 0.05rem;
-      height: 32px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+    styled.button`
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 32px;
     `
 
 const SearchCardContent =
@@ -108,14 +128,16 @@ const SearchItemLabel =
       gap: 8px;
     `
 
-const Search = ({isShowing, setIsShowing} : {isShowing: boolean, setIsShowing: React.Dispatch<SetStateAction<boolean>>}) => {
+const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate} : {isShowing: boolean, setIsShowing: React.Dispatch<SetStateAction<boolean>>, setTracks: React.Dispatch<SetStateAction<Track[]>>, tracks: Track[], updates: number, setUpdate: React.Dispatch<SetStateAction<number>>}) => {
     const [value, setValue] = React.useState('')
     const [result, setResult] = React.useState([{
-        FileName: '',
-        FileHash: '',
-        AlbumID: '',
-        AlbumName: '',
-        Duration: 0
+        FileName: 'null',
+        FileHash: 'null',
+        AlbumID: 'null',
+        AlbumName: 'null',
+        Duration: 0,
+        OriSongName: 'null',
+        Auxiliary: 'null'
     }])
 
     const watchInputValue = (value:string) => {
@@ -139,21 +161,57 @@ const Search = ({isShowing, setIsShowing} : {isShowing: boolean, setIsShowing: R
             .then(res => {
                 if (!res.data.error_code) {
                     let list: resultType[] = [];
-                    res.data.data.lists.map((item: resultType, index: number, array: [])=>{
+                    res.data.data.lists.map((item: resultType)=>{
                         list.push({
                             FileName: item.FileName,
                             FileHash: item.FileHash,
                             AlbumID: item.AlbumID,
                             AlbumName: item.AlbumName,
-                            Duration: item.Duration
+                            Duration: item.Duration,
+                            OriSongName: item.OriSongName,
+                            Auxiliary: item.Auxiliary
                         })
-                        if (index === array.length - 1) {
-                            setResult(list)
-                            console.log("completed.")
-                        }
                     })
+                    setResult(list)
                 }
             })
+            .catch(err => {
+                console.error('Please try again later')
+            })
+    }
+
+    const addToTracks = (dataset: DOMStringMap) => {
+        let track = {
+            code: dataset.hash,
+            album_id: dataset.album_id
+        }
+        let flag = false
+        tracks.map(item => {
+            if (track.code === item.code) {
+                flag = true
+                console.log('不可重复添加！')
+
+            }
+        })
+        !flag && fetchMusicSource(track).then(res => {
+            let item = res.data.data;
+            let track_new: Track = {
+                title: item.song_name,
+                subtitle: item.album_name,
+                artist: item.author_name,
+                src: item.play_url,
+                cover: item.img,
+                lyric: item.lyrics,
+                album_id: item.album_id,
+                code: item.hash,
+                timestamp: new Date().getTime() + 86400000,
+                unique_index: tracks.length + 1,
+                time_length: item.timelength
+            };
+            console.log([...tracks, track_new])
+            setTracks([...tracks, track_new])
+            setUpdate(updates + 1)
+        })
     }
 
     return(
@@ -162,17 +220,24 @@ const Search = ({isShowing, setIsShowing} : {isShowing: boolean, setIsShowing: R
                 <SearchCard>
                     <SearchCardTitle>
                         <div onClick={() => {setIsShowing(false)}}>×</div>
-                        <SearchCardInput type="text" autoFocus onChange={e => watchInputValue(e.target.value)} />
-                        <SearchCardButton type="button" name="search" value="🔍" onClick={() => doSearch(value)} />
+                        <SearchGroup>
+                            <SearchCardSwitch>
+                                <Kugou />
+                            </SearchCardSwitch>
+                            <SearchCardInput type="text" autoFocus onChange={e => watchInputValue(e.target.value)} />
+                            <SearchCardButton name="search" onClick={() => doSearch(value)}>
+                                <SearchIcon />
+                            </SearchCardButton>
+                        </SearchGroup>
                     </SearchCardTitle>
                     <SearchCardContent>
-                        { result.length ? (
-                            result.map((item, index) => {
+                        { result[0].AlbumID !== 'null' ? (
+                            result.map((item: resultType, index) => {
                                 return(
                                     <SearchItem key={index}>
                                         <SearchItemLabel>
                                             <span className="inline-flex items-center">
-                                                <input type="checkbox" data-hash="item.FileHash" className="p-2 bg-sky-100 checked:bg-sky-300 me-2" />
+                                                <input type="checkbox" className="p-2 bg-sky-100 checked:bg-sky-300 me-2" data-hash={item.FileHash} data-album_id={item.AlbumID} onClick={(e) => {addToTracks((e.target as HTMLElement).dataset)}} />
                                                 {item.FileName}
                                             </span>
                                             <span>{Math.trunc(item.Duration / 60) > 9 ? '' : '0'}{Math.trunc(item.Duration / 60)}:{item.Duration % 60 > 9 ? '' : '0'}{item.Duration % 60}</span>
@@ -180,7 +245,11 @@ const Search = ({isShowing, setIsShowing} : {isShowing: boolean, setIsShowing: R
                                     </SearchItem>
                                 )
                             })
-                        ) : (<div>1</div>)
+                        ) : (
+                            <div>
+                                输入歌曲或歌手名称开始搜索吧
+                            </div>
+                        )
                         }
                     </SearchCardContent>
                 </SearchCard>

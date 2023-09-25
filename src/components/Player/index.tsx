@@ -17,25 +17,13 @@ import Md5 from 'crypto-js/md5';
 import { v4 as uuidv4 } from 'uuid';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Track, fetchMusicSource } from "./utils";
 
 initDB(DBConfig);
 
-type Track = {
-    title: string,
-    subtitle: string,
-    artist: string,
-    src: string,
-    cover: string,
-    lyric: string,
-    album_id: string,
-    code: string,
-    timestamp: number,
-    unique_index: number,
-    time_length: number
-}
-
 // 样式
-const MiraiPlayer = styled.div.attrs((/* props */) => ({ tabIndex: 0 }))`
+const MiraiPlayer =
+    styled.div.attrs((/* props */) => ({ tabIndex: 0 }))`
       position: absolute;
       bottom: 0;
       left: 0;
@@ -60,9 +48,9 @@ const MiraiPlayer = styled.div.attrs((/* props */) => ({ tabIndex: 0 }))`
       
       input, button, ul, li {
         -webkit-appearance: none;
-      }
-
-        &::after {
+      } 
+      
+      &::after {
           background: linear-gradient( 135deg, #3C8CE7 10%, #00EAFF 100%);
           width: 100%;
           height: 100%;
@@ -74,9 +62,10 @@ const MiraiPlayer = styled.div.attrs((/* props */) => ({ tabIndex: 0 }))`
           right: 0;
           z-index: -1;
         }
-`
+    `
 
-const Layout = styled.div`
+const Layout =
+    styled.div`
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -85,8 +74,7 @@ const Layout = styled.div`
       margin: 0;
       color: white;
       backdrop-filter: blur(8px) brightness(0.9);
-      text-shadow: 1px 1px 2px #00000030;
-`
+    `
 
 const Player = () => {
     const { add, deleteRecord, update, getAll } = useIndexedDB("playlist");
@@ -96,10 +84,9 @@ const Player = () => {
     const [trackProgress, setTrackProgress] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isRotating, setIsRotating] = useState(false);
-    // @ts-ignore
     const [rotate, setRotate] = useState("paused");
     const [size, setSize] = useState("default");
-    const [updated, setUpdated] = useState(false);
+    const [updates, setUpdate] = useState(0);
     const [isShowing, setIsShowing] = useState(false);
 
     // Destructure for conciseness
@@ -153,121 +140,87 @@ const Player = () => {
     };
 
     const toPrevTrack = () => {
-        if (trackIndex - 1 < 0) {
-            setTrackIndex(tracks.length - 1);
-        } else {
-            setTrackIndex(trackIndex - 1);
-        }
+        trackIndex - 1 < 0 ? setTrackIndex(tracks.length - 1) : setTrackIndex(trackIndex - 1);
     };
 
     const toNextTrack = () => {
-        if (trackIndex < tracks.length - 1) {
-            setTrackIndex(trackIndex + 1);
-        } else {
-            setTrackIndex(0);
-        }
+        trackIndex < tracks.length - 1 ? setTrackIndex(trackIndex + 1) : setTrackIndex(0);
     };
 
     const notify = (string: string) => toast(string);
 
     const setUpdatedTracks = () => {
-        getAll().then((_tracks) => {
+        getAll().then((_tracks: Track[]) => {
             console.log('tracks check once again:',_tracks)
             if (_tracks.length > 0) {
                 setTracks(_tracks);
                 setTrackIndex(trackIndex);
-                setUpdated(!updated);
+                setUpdate(updates + 1);
             }
         });
     }
 
-    const fetchMusicSource = async(data: Track) => {
-        return axios.get('https://bird.ioliu.cn/v1?url=https://wwwapi.kugou.com/yy/index.php', {
-            params: {
-                r: 'play/getdata',
-                hash: data.code,
-                album_id: data.album_id,
-                dfid: '0hWg5b0DHEyF0n5Sth36GXer',
-                mid: cookie.load('kg_mid'),
-                platid: 4
-            }
-        })
-    } //[INVOLVE]获取歌曲源
-
-    const handleUpdate = (res: { data:{ play_url: string | undefined; } }, isLast: boolean, raw: Track) => {
-        let regex = /^(http|https):\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?$/;
-        console.log(res)
-        if (typeof res.data.play_url === 'string' && regex.test(res.data.play_url)) {
-            update({
-                title: raw.title,
-                subtitle: raw.subtitle,
-                artist: raw.artist,
-                src: res.data.play_url,
-                cover: raw.cover,
-                lyric: raw.lyric,
-                album_id: raw.album_id,
-                code: raw.code,
-                timestamp: new Date().getTime()+86400000,
-                unique_index: raw.unique_index,
-                time_length: raw.time_length })
-                .then(() => {
-                    console.log('Track source updates completed.')
-                    if (isLast) {
-                        setUpdatedTracks();
-                    }
-                })
-        } else {
-            throw new Error("Can't fetch the source")
-        }
+    const switchSearch = () => {
+        setIsShowing(true);
     }
 
-    const switchSerach = () => {
-        setIsShowing(true)
+    const handleAllUpdates = (tracks: Track[]) => {
+        const time = new Date().getTime();
+        let uniques: number[] =  [];
+        axios.all(
+            tracks.map((item: Track) => {
+                if (item.timestamp > time) {
+                    console.log('skipped',item.unique_index)
+                } else {
+                    console.log('ready to update',item.unique_index)
+                    uniques.push(item.unique_index)
+                    return fetchMusicSource(item)
+                }
+            })
+        ).then(axios.spread((...tasks) => {
+            tasks.map((res, i) => {
+                if (res !== undefined) {
+                    let item = res.data.data;
+                    let regex = /^(http|https):\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?$/;
+                    if (typeof item.play_url === 'string' && regex.test(item.play_url)) {
+                        update({
+                            title: item.song_name,
+                            subtitle: item.album_name,
+                            artist: item.author_name,
+                            src: item.play_url,
+                            cover: item.img,
+                            lyric: item.lyrics,
+                            album_id: item.album_id,
+                            code: item.hash,
+                            timestamp: new Date().getTime() + 86400000,
+                            unique_index: uniques[i],
+                            time_length: item.timelength
+                        }).then(() => {
+                            console.log(i,'saved')
+                        })
+                    } else {
+                        throw new Error("Can't fetch the source")
+                    }
+                }
+            })
+            setUpdatedTracks()
+        }))
     }
 
     useEffect(() => {
-        getAll()
-            .then((tracks: Track[]) => {
-                console.log('tracks check:',tracks)
-                const time = new Date().getTime();
-                cookie.save('kg_mid', Md5(uuidv4()), { maxAge: 86400 });
-                if (tracks.length > 0) {
-                    tracks.map((item, index, array) => {
-                        if (item.timestamp >= time) {
-                            setUpdatedTracks();
-                        } else {
-                            fetchMusicSource({...item})
-                                .then(res => {
-                                    if (res.status >= 200 && res.status < 300) {
-                                        handleUpdate(res.data, index + 1 === array.length, {...item})
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error('Failed to fetch latest data.', error)
-                                })
-                                .finally(() => {
-                                    console.log('Fetch completed.')
-                                })
-                        }
-                    });
-                } else {
-                    tracks0.map((item, index, array) => {
-                        fetchMusicSource({...item})
-                            .then(res => {
-                                if (res.status >= 200 && res.status < 300) {
-                                    handleUpdate(res.data, index + 1 === array.length, {...item})
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Failed to fetch latest data.', error)
-                            })
-                            .finally(() => {
-                                console.log('Fetch completed.')
-                            })
-                    });
-                }
-            })
+        getAll().then((tracks: Track[]) => {
+            console.log('tracks check:',tracks)
+            cookie.save('kg_mid', Md5(uuidv4()), { maxAge: 86400 });
+            // 若从数据库获取的音轨数等于0则启用预存数据并更新，否则检查获取音轨是否过期
+            tracks.length > 0 ? handleAllUpdates(tracks) : handleAllUpdates(tracks0);
+        })
     }, []);
+
+    useEffect(() => {
+        updates > 0 && tracks.map(data => {
+            update(data).then(r => console.log('a piece of data saved'))
+        })
+    }, [updates]);
 
     useEffect(() => {
         if (isPlaying) {
@@ -307,13 +260,14 @@ const Player = () => {
                 })
                 .catch((e) => {
                     notify("当前浏览器禁止自动播放，请手动点击播放按钮");
-                    console.error("Autoplay is forbidden!",e)
+                    console.error("Autoplay is forbidden!", e)
                 });
         } else {
             // Set the isReady ref as true for the next pass
             isReady.current = true;
         }
-    }, [trackIndex, updated]);
+        console.log("new audio fired")
+    }, [trackIndex, updates]);
 
     useEffect(() => {
         // Pause and clean up on unmount
@@ -358,9 +312,10 @@ const Player = () => {
                     url={cover}
                     data-size="mini"
                     desc="音乐专辑封面"
-                    onDoubleClick={switchSerach}
+                    onDoubleClick={switchSearch}
                 />
                 <Lyric
+                    tracks={tracks}
                     trackIndex={trackIndex}
                     trackProgress={trackProgress}
                     isPlaying={isPlaying}
@@ -383,6 +338,10 @@ const Player = () => {
                 <Search
                     isShowing={isShowing}
                     setIsShowing={setIsShowing}
+                    setTracks={setTracks}
+                    tracks={tracks}
+                    updates={updates}
+                    setUpdate={setUpdate}
                 />
             </Layout>
         </MiraiPlayer>

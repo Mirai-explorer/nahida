@@ -1,6 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
-import tracks from "../../../public/data/tracks";
 import styled from "styled-components";
+import {Track} from "@/components/Player/utils";
+
+type lyricType = {
+    offset: number,
+    text: string
+}
 
 const LyricWrap =
     styled.div`
@@ -55,6 +60,7 @@ const Line =
       white-space: nowrap;
       overflow: hidden;
       letter-spacing: 2px;
+      text-shadow: 1px 1px 2px #00000030;
       
       &.bubble {
         visibility: visible;
@@ -73,13 +79,13 @@ const Line =
       }
     `
 
-const Lyric = ({ trackIndex, trackProgress, isPlaying }:{ trackIndex: number, trackProgress: number, isPlaying: boolean }) => {
+const Lyric = ({ tracks, trackIndex, trackProgress, isPlaying }:{ tracks: Track[], trackIndex: number, trackProgress: number, isPlaying: boolean }) => {
     const [number, setNumber] = useState(0);
     const target: React.RefObject<HTMLDivElement> = React.createRef();
     const parseLrc = (str: string) => {
         const regex : RegExp = /^\[(?<time>\d{2}:\d{2}(.\d{2})?)\](?<text>.*)/;
         const lines : string[] | null = str.split("\n");
-        const output : [] = [];
+        const output : lyricType[] = [];
         const parseTime = (time: string) => {
             const minsec = time.split(":");
             const min = parseInt(minsec[0]) * 60;
@@ -91,9 +97,8 @@ const Lyric = ({ trackIndex, trackProgress, isPlaying }:{ trackIndex: number, tr
             if (match === null) return;
             // @ts-ignore
             const { time, text } = match.groups;
-            // @ts-ignore
             output.push({
-                offset: parseTime(time).toFixed(2),
+                offset: Number(parseTime(time).toFixed(2)),
                 text: text.trim()
             });
         });
@@ -102,22 +107,16 @@ const Lyric = ({ trackIndex, trackProgress, isPlaying }:{ trackIndex: number, tr
 
     const lyric = parseLrc(tracks[trackIndex].lyric);
 
-    type lyricType = {
-        offset: number,
-        text: string
-    }
-
-    const syncLyric = (lyrics: [], time: number) => {
-        const scores : [] = [];
+    const syncLyric = (lyrics: lyricType[], time: number) => {
+        const scores : number[] = [];
         lyrics.forEach((lyric : lyricType) => {
             const score = time - lyric.offset;
-            if (score >= -0.1) { // @ts-ignore
+            if (score >= -0.1) {
                 scores.push(score);
             }
         });
         if (scores.length === 0) return null;
         const closest : number = Math.min(...scores);
-        // @ts-ignore
         return scores.indexOf(closest);
     };
 
