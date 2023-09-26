@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Track, fetchMusicSource } from "./utils";
+import PlayList from "@/components/Player/PlayList";
 
 initDB(DBConfig);
 
@@ -74,6 +75,16 @@ const Layout =
       margin: 0;
       color: white;
       backdrop-filter: blur(8px) brightness(0.9);
+      transition: scale .3s ease-in-out;
+      
+      &.full {
+        scale: 1.0;
+      }
+      
+      &.scale {
+        scale: 0.9;
+      }
+      
     `
 
 const Player = () => {
@@ -85,9 +96,15 @@ const Player = () => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [isRotating, setIsRotating] = useState(false);
     const [rotate, setRotate] = useState("paused");
-    const [size, setSize] = useState("default");
+    const [size, setSize] = useState("mini");
+    const [alive, setAlive] = useState(false);
     const [updates, setUpdate] = useState(0);
     const [isShowing, setIsShowing] = useState(false);
+    const [playListShowing, setPlayListShowing] = useState(false);
+    const [toastMessage, setToastMessage] = useState({
+        value: '',
+        timestamp: new Date().getTime()
+    });
 
     // Destructure for conciseness
     const {title, subtitle, artist, cover, src, time_length} = tracks[trackIndex];
@@ -132,7 +149,15 @@ const Player = () => {
     const onScrubEnd = (value: number) => {
         // If not already playing, start
         console.log(value, time_length);
-        audioRef.current!.currentTime = value > time_length / 1000 ? audioRef.current!.currentTime : value;
+        if (value < time_length / 1000) {
+            audioRef.current!.currentTime = value
+        } else {
+            audioRef.current!.currentTime = audioRef.current!.currentTime
+            setToastMessage({
+                value: '超出试听时长',
+                timestamp: new Date().getTime()
+            })
+        }
         if (!isPlaying) {
             setIsPlaying(true);
         }
@@ -155,7 +180,7 @@ const Player = () => {
             if (_tracks.length > 0) {
                 setTracks(_tracks);
                 setTrackIndex(trackIndex);
-                setUpdate(updates + 1);
+                setAlive(true);
             }
         });
     }
@@ -178,8 +203,12 @@ const Player = () => {
                 }
             })
         ).then(axios.spread((...tasks) => {
+            uniques.length > 0 && setToastMessage({
+                value: '数据更新中，请稍候...',
+                timestamp: new Date().getTime()
+            })
             tasks.map((res, i) => {
-                if (res !== undefined) {
+                if (res) {
                     let item = res.data.data;
                     let regex = /^(http|https):\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?$/;
                     if (typeof item.play_url === 'string' && regex.test(item.play_url)) {
@@ -194,7 +223,7 @@ const Player = () => {
                             code: item.hash,
                             timestamp: new Date().getTime() + 86400000,
                             unique_index: uniques[i],
-                            time_length: item.timelength
+                            time_length: !item.is_free_part ? item.timelength : item.trans_param.hash_offset.end_ms
                         }).then(() => {
                             console.log(i,'saved')
                         })
@@ -217,10 +246,14 @@ const Player = () => {
     }, []);
 
     useEffect(() => {
-        updates > 0 && tracks.map(data => {
+        updates > 0 && tracks.map((data, i) => {
             update(data).then(r => console.log('a piece of data saved'))
         })
     }, [updates]);
+
+    useEffect(() => {
+        toastMessage.value !== '' && notify(toastMessage.value)
+    }, [toastMessage]);
 
     useEffect(() => {
         if (isPlaying) {
@@ -228,14 +261,27 @@ const Player = () => {
                 .then(() => {
                     startTimer();
                     setIsRotating(true);
+                    document.title = '正在播放：'+title+' - 云端音乐播放器 - Mirai探索者'
                 })
                 .catch((e) => {
-                    notify("当前浏览器禁止自动播放，请手动点击播放按钮");
-                    console.error("Autoplay is forbidden!",e)
+                    let value = '';
+                    if (e.message.includes('no supported sources')) {
+                        value = '播放源出错';
+                    } else if (e.message.includes('user didn\'t interact')) {
+                        value = '当前浏览器禁止自动播放，请手动点击播放';
+                    } else {
+                        value = '出现不可预知的错误';
+                    }
+                    setToastMessage({
+                        value: value,
+                        timestamp: new Date().getTime()
+                    });
+                    console.error(e.message)
                 });
         } else {
             audioRef.current!.pause();
             setIsRotating(false);
+            document.title = '暂停中'+' - 云端音乐播放器 - Mirai探索者'
         }
     }, [isPlaying]);
 
@@ -257,17 +303,29 @@ const Player = () => {
                 .then(() => {
                     setIsPlaying(true);
                     startTimer();
+                    document.title = '正在播放：'+title+' - 云端音乐播放器 - Mirai探索者'
                 })
                 .catch((e) => {
-                    notify("当前浏览器禁止自动播放，请手动点击播放按钮");
-                    console.error("Autoplay is forbidden!", e)
+                    let value = '';
+                    if (e.message.includes('no supported sources')) {
+                        value = '播放源出错';
+                    } else if (e.message.includes('user didn\'t interact')) {
+                        value = '当前浏览器禁止自动播放，请手动点击播放';
+                    } else {
+                        value = '出现不可预知的错误';
+                    }
+                    setToastMessage({
+                        value: value,
+                        timestamp: new Date().getTime()
+                    });
+                    console.error(e.message)
                 });
         } else {
             // Set the isReady ref as true for the next pass
             isReady.current = true;
         }
         console.log("new audio fired")
-    }, [trackIndex, updates]);
+    }, [trackIndex, alive]);
 
     useEffect(() => {
         // Pause and clean up on unmount
@@ -301,7 +359,7 @@ const Player = () => {
 
     return (
         <MiraiPlayer className={`bg-cover bg-center bg-no-repeat transition-all duration-300 ease-out`} style={{backgroundImage: `url(${tracks[trackIndex].cover})`}}>
-            <Layout>
+            <Layout className={playListShowing ? 'scale' : 'full'}>
                 <Title
                     title={title || "音乐感动生活"}
                     subtitle={subtitle || "Mirai云端播放器"}
@@ -310,8 +368,8 @@ const Player = () => {
                 <Cover
                     rotate={rotate}
                     url={cover}
-                    data-size="mini"
-                    desc="音乐专辑封面"
+                    data-size={size}
+                    desc={title}
                     onDoubleClick={switchSearch}
                 />
                 <Lyric
@@ -334,16 +392,24 @@ const Player = () => {
                     onPrevClick={toPrevTrack}
                     onNextClick={toNextTrack}
                     onPlayPauseClick={setIsPlaying}
+                    onPlayListClick={setPlayListShowing}
                 />
                 <Search
                     isShowing={isShowing}
                     setIsShowing={setIsShowing}
-                    setTracks={setTracks}
                     tracks={tracks}
+                    setTracks={setTracks}
                     updates={updates}
                     setUpdate={setUpdate}
+                    toastMessage={toastMessage}
+                    setToastMessage={setToastMessage}
                 />
             </Layout>
+            <ToastContainer />
+            <PlayList
+                isShowing={playListShowing}
+                setIsShowing={setPlayListShowing}
+            />
         </MiraiPlayer>
     )
 }

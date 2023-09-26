@@ -44,6 +44,9 @@ const Waterfall =
       height: auto;
       letter-spacing: 0.1em;
       overflow: hidden;
+      position: relative;
+      transition: top .15s linear;
+      top: 0;
     `
 
 const Line =
@@ -54,28 +57,26 @@ const Line =
       visibility: visible;
       font-size: 20px;
       white-space: nowrap;
-      transition: font-size 10ms linear, text-shadow 10ms linear;
       margin: 0 8vw;
       width: 84vw;
       white-space: nowrap;
       overflow: hidden;
       letter-spacing: 2px;
-      text-shadow: 1px 1px 2px #00000030;
       
       &.bubble {
         visibility: visible;
         font-weight: 500;
         opacity: 1;
-        transition: font-size 150ms,text-shadow 150ms;
         font-size: 25px;
+        transition: font-size .3s ease-in, opacity .15s ease-in;
       }
       
       &.await {
         visibility: visible;
         color: #fff;
         opacity: .6;
-        transition: font-size 150ms,text-shadow 150ms;
         font-size: 20px;
+        transition: font-size .1s linear, opacity .1s linear;
       }
     `
 
@@ -111,7 +112,7 @@ const Lyric = ({ tracks, trackIndex, trackProgress, isPlaying }:{ tracks: Track[
         const scores : number[] = [];
         lyrics.forEach((lyric : lyricType) => {
             const score = time - lyric.offset;
-            if (score >= -0.1) {
+            if (score >= -0.3) {
                 scores.push(score);
             }
         });
@@ -122,13 +123,13 @@ const Lyric = ({ tracks, trackIndex, trackProgress, isPlaying }:{ tracks: Track[
 
     useEffect(() => {
         setNumber(syncLyric(lyric, trackProgress) as number);
-        target.current !== null ? target.current.scrollTop = 40 * number : null;
+        target.current !== null ? target.current.style.top = -(40 * number)+'px' : null;
     }, [trackProgress]);
 
     return (
         <LyricWrap>
-            <Scroll ref={target}>
-                <Waterfall>
+            <Scroll>
+                <Waterfall ref={target}>
                     {lyric.length ? (
                         lyric.map((item: lyricType, index : number) => {
                             return (

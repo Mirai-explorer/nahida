@@ -22,8 +22,8 @@ const SearchWrap =
       left: 0;
       width: 100%;
       height: 100%;
-      backdrop-filter: blur(4px);
-      background: rgba(255,255,255,.15);
+      backdrop-filter: blur(8px) contrast(0.5);
+      background: rgba(255,255,255,.3);
       
       &.show {
         display: block;
@@ -128,7 +128,22 @@ const SearchItemLabel =
       gap: 8px;
     `
 
-const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate} : {isShowing: boolean, setIsShowing: React.Dispatch<SetStateAction<boolean>>, setTracks: React.Dispatch<SetStateAction<Track[]>>, tracks: Track[], updates: number, setUpdate: React.Dispatch<SetStateAction<number>>}) => {
+const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate, toastMessage, setToastMessage} : {
+    isShowing: boolean,
+    setIsShowing: React.Dispatch<SetStateAction<boolean>>,
+    setTracks: React.Dispatch<SetStateAction<Track[]>>,
+    tracks: Track[],
+    updates: number,
+    setUpdate: React.Dispatch<SetStateAction<number>>,
+    toastMessage: {
+        value: string,
+        timestamp: number
+    },
+    setToastMessage: React.Dispatch<SetStateAction<{
+        value: string,
+        timestamp: number
+    }>>
+}) => {
     const [value, setValue] = React.useState('')
     const [result, setResult] = React.useState([{
         FileName: 'null',
@@ -139,12 +154,14 @@ const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate}
         OriSongName: 'null',
         Auxiliary: 'null'
     }])
+    const [loading, setLoading] = React.useState(false)
 
     const watchInputValue = (value:string) => {
         setValue(value)
     }
 
     const doSearch = (keyword: string) => {
+        setLoading(true)
         axios.get('https://bird.ioliu.cn/v1?url=https://songsearch.kugou.com/song_search_v2',{
             params: {
                 keyword:keyword,
@@ -159,7 +176,8 @@ const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate}
                 privilege_filter:0
             }})
             .then(res => {
-                if (!res.data.error_code) {
+                setLoading(false)
+                if (!res.data.err_code) {
                     let list: resultType[] = [];
                     res.data.data.lists.map((item: resultType)=>{
                         list.push({
@@ -172,11 +190,18 @@ const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate}
                             Auxiliary: item.Auxiliary
                         })
                     })
-                    setResult(list)
+                    list.length !== 0 ? setResult(list) : setResult([])
+                } else {
+                    throw new Error('an unexpected behavior occurred.')
                 }
             })
             .catch(err => {
-                console.error('Please try again later')
+                setLoading(false)
+                setToastMessage({
+                    value: '发生不可预知的行为，错误信息：'+err.message,
+                    timestamp: new Date().getTime()
+                })
+                console.error('Please try again later:',err.message)
             })
     }
 
@@ -189,28 +214,47 @@ const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate}
         tracks.map(item => {
             if (track.code === item.code) {
                 flag = true
-                console.log('不可重复添加！')
+                setToastMessage({
+                    value: '不可重复添加',
+                    timestamp: new Date().getTime()
+                })
 
             }
         })
         !flag && fetchMusicSource(track).then(res => {
-            let item = res.data.data;
-            let track_new: Track = {
-                title: item.song_name,
-                subtitle: item.album_name,
-                artist: item.author_name,
-                src: item.play_url,
-                cover: item.img,
-                lyric: item.lyrics,
-                album_id: item.album_id,
-                code: item.hash,
-                timestamp: new Date().getTime() + 86400000,
-                unique_index: tracks.length + 1,
-                time_length: item.timelength
-            };
-            console.log([...tracks, track_new])
-            setTracks([...tracks, track_new])
-            setUpdate(updates + 1)
+            console.log(res)
+            if (!res.data.err_code) {
+                let item = res.data.data;
+                let track_new: Track = {
+                    title: item.song_name,
+                    subtitle: item.album_name,
+                    artist: item.author_name,
+                    src: item.play_url,
+                    cover: item.img,
+                    lyric: item.lyrics,
+                    album_id: item.album_id,
+                    code: item.hash,
+                    timestamp: new Date().getTime() + 86400000,
+                    unique_index: tracks.length + 1,
+                    time_length: !item.is_free_part ? item.timelength : item.trans_param.hash_offset.end_ms
+                };
+                console.log([...tracks, track_new])
+                setIsShowing(false)
+                setTracks([...tracks, track_new])
+                setUpdate(updates + 1)
+                setToastMessage({
+                    value: item.song_name+' 已加入歌单，可在歌单选取播放',
+                    timestamp: new Date().getTime()
+                })
+            } else {
+                throw new Error('an unexpected behavior occurred.')
+            }
+        }).catch(err => {
+            setToastMessage({
+                value: '发生不可预知的行为，错误信息：'+err.message,
+                timestamp: new Date().getTime()
+            })
+            console.error('Please try again later:',err.message)
         })
     }
 
@@ -231,13 +275,21 @@ const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate}
                         </SearchGroup>
                     </SearchCardTitle>
                     <SearchCardContent>
-                        { result[0].AlbumID !== 'null' ? (
+                        {!loading && result[0].AlbumID !== 'null' && (
                             result.map((item: resultType, index) => {
                                 return(
                                     <SearchItem key={index}>
                                         <SearchItemLabel>
                                             <span className="inline-flex items-center">
-                                                <input type="checkbox" className="p-2 bg-sky-100 checked:bg-sky-300 me-2" data-hash={item.FileHash} data-album_id={item.AlbumID} onClick={(e) => {addToTracks((e.target as HTMLElement).dataset)}} />
+                                                <input
+                                                    type="checkbox"
+                                                    className="p-2 bg-sky-100 checked:bg-sky-300 me-2"
+                                                    data-hash={item.FileHash}
+                                                    data-album_id={item.AlbumID}
+                                                    onClick={ (e) => {
+                                                        addToTracks((e.target as HTMLElement).dataset)
+                                                    }}
+                                                />
                                                 {item.FileName}
                                             </span>
                                             <span>{Math.trunc(item.Duration / 60) > 9 ? '' : '0'}{Math.trunc(item.Duration / 60)}:{item.Duration % 60 > 9 ? '' : '0'}{item.Duration % 60}</span>
@@ -245,12 +297,22 @@ const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate}
                                     </SearchItem>
                                 )
                             })
-                        ) : (
+                        )}
+                        {!loading && result[0].AlbumID === 'null' && (
                             <div>
                                 输入歌曲或歌手名称开始搜索吧
                             </div>
-                        )
-                        }
+                        )}
+                        {!loading && result.length === 0 && (
+                            <div>
+                                没有查询到相关结果
+                            </div>
+                        )}
+                        {loading && (
+                            <div>
+                                搜索中，请等待...
+                            </div>
+                        )}
                     </SearchCardContent>
                 </SearchCard>
             </SearchStack>

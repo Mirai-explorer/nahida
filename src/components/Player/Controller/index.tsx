@@ -91,11 +91,12 @@ const Button =
       cursor: pointer;
     `
 
-const Controller = ({ isPlaying, onPlayPauseClick, onPrevClick, onNextClick} : {
+const Controller = ({ isPlaying, onPlayPauseClick, onPrevClick, onNextClick, onPlayListClick} : {
     isPlaying : boolean,
     onPlayPauseClick: React.Dispatch<React.SetStateAction<boolean>>,
     onPrevClick: React.MouseEventHandler<HTMLButtonElement>,
-    onNextClick: React.MouseEventHandler<HTMLButtonElement>
+    onNextClick: React.MouseEventHandler<HTMLButtonElement>,
+    onPlayListClick: React.Dispatch<React.SetStateAction<boolean>>
 }) => (
     <ControllerWrap>
         <ControllerInner>
@@ -162,7 +163,7 @@ const Controller = ({ isPlaying, onPlayPauseClick, onPrevClick, onNextClick} : {
                     type="button"
                     className="songlist"
                     aria-label="SongList"
-                    onClick={onNextClick}
+                    onClick={() => onPlayListClick(true)}
                 >
                     <SongList />
                 </Button>

@@ -8,7 +8,6 @@ import { Provider } from 'react-redux';
 import Card from '@/components/Common/Card';
 import Tag from '@/components/Common/Tag'
 
-
 const App = () => {
     return (
         <Provider store={store}>
