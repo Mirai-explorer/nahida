@@ -33,5 +33,24 @@ const fetchMusicSource = async(data: Track | sTrack) => {
     })
 } //[INVOLVE]获取歌曲源
 
-export { fetchMusicSource };
+const getTime = (type: number) => {
+    let timeDisplay = Math.floor(type);
+    let min = !Number.isNaN(timeDisplay) ? timeDisplay / 60 : -1;
+    let mins: number | string = min | 0;
+    if (mins >= 0 && mins < 10) {
+        mins = "0" + mins;
+    } else if (mins === -1) {
+        mins = "--";
+    }
+    let sec = !Number.isNaN(timeDisplay) ? timeDisplay % 60 : -1;
+    let secs: number | string = sec | 0;
+    if (secs >= 0 && secs < 10) {
+        secs = "0" + secs;
+    } else if (secs === -1) {
+        secs = "--";
+    }
+    return mins + ":" + secs;
+};
+
+export { fetchMusicSource, getTime };
 export type { Track };

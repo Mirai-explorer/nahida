@@ -65,14 +65,15 @@ const Line =
       
       &.bubble {
         visibility: visible;
-        font-weight: 500;
+        font-weight: 700;
         opacity: 1;
-        font-size: 25px;
-        transition: font-size .3s ease-in, opacity .15s ease-in;
+        font-size: 24px;
+        transition: font-size .1s ease-in, opacity .15s ease-in;
       }
       
       &.await {
         visibility: visible;
+        font-weight: 500;
         color: #fff;
         opacity: .6;
         font-size: 20px;

@@ -17,7 +17,7 @@ import Md5 from 'crypto-js/md5';
 import { v4 as uuidv4 } from 'uuid';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Track, fetchMusicSource } from "./utils";
+import {Track, fetchMusicSource, getTime} from "./utils";
 import PlayList from "@/components/Player/PlayList";
 
 initDB(DBConfig);
@@ -335,24 +335,7 @@ const Player = () => {
         };
     }, []);
 
-    const getTime = (type: number) => {
-        let timeDisplay = Math.floor(type);
-        let min = !Number.isNaN(timeDisplay) ? timeDisplay / 60 : -1;
-        let mins: number | string = min | 0;
-        if (mins >= 0 && mins < 10) {
-            mins = "0" + mins;
-        } else if (mins === -1) {
-            mins = "--";
-        }
-        let sec = !Number.isNaN(timeDisplay) ? timeDisplay % 60 : -1;
-        let secs: number | string = sec | 0;
-        if (secs >= 0 && secs < 10) {
-            secs = "0" + secs;
-        } else if (secs === -1) {
-            secs = "--";
-        }
-        return mins + ":" + secs;
-    };
+
 
     const past = getTime(trackProgress);
     const _duration = getTime(duration);
@@ -407,6 +390,9 @@ const Player = () => {
             </Layout>
             <ToastContainer />
             <PlayList
+                tracks={tracks}
+                trackIndex={trackIndex}
+                setTrackIndex={setTrackIndex}
                 isShowing={playListShowing}
                 setIsShowing={setPlayListShowing}
             />
