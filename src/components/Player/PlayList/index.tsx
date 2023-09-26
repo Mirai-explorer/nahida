@@ -1,6 +1,7 @@
 import {styled} from "styled-components";
-import React, {SetStateAction, useState} from "react";
+import React, {SetStateAction, useEffect, useState} from "react";
 import {Track, getTime} from "@/components/Player/utils";
+import { simpleConfirm, SimpleDialogContainer } from 'react-simple-dialogs'
 
 const PlayListWrap =
     styled.div`
@@ -99,6 +100,10 @@ const PlayItem =
       &.highlight {
         background-color: #eceff1;
       }
+      
+      &.highlight span.play-item_title {
+        color: #9b1442;
+      }
     `
 
 const PlayItemLabel =
@@ -119,37 +124,55 @@ const PlayList = ({tracks, trackIndex, setTrackIndex, isShowing, setIsShowing} :
     setIsShowing: React.Dispatch<SetStateAction<boolean>>
 }) => {
     const [X, setX] = useState(0)
-    const target: React.RefObject<HTMLDivElement> = React.createRef<HTMLDivElement>()
-    const dragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    const target = React.useRef<Array<HTMLDivElement | null >>([])
+    const delConfirm = async (text: string, index: number) => {
+        if (await simpleConfirm({
+            title: '删除警告',
+            message: text,
+            confirmLabel: '确认',
+            cancelLabel: '算了'
+        })) {
+            console.log(index+' deleted')
+        } else {
+            console.log('nothing to do')
+        }
+    }
+    useEffect(() => {
+        target.current = target.current.slice(0, tracks.length)
+    }, [tracks]);
+    const handleClick = (i: number) => {
+        setTrackIndex(i)
+        setIsShowing(false)
+    }
+    const dragStart = (e: React.DragEvent<HTMLDivElement>, index: number) => {
         setX(e.clientX)
-        console.log(target)
+        console.log(index)
     }
-    const touchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    const touchStart = (e: React.TouchEvent<HTMLDivElement>, index: number) => {
         setX(e.touches[0].clientX)
+        console.log(index)
     }
-    const onDrag = (e: React.DragEvent<HTMLDivElement>) => {
+    const onDrag = (e: React.DragEvent<HTMLDivElement>, index: number) => {
         if (e.clientX - X > -300) {
-            target.current !== null ? target.current.style.transform = `translateX(-30px)` : null;
+            target.current[index]!.style.transform = `translateX(-30px)`;
         } else {
-            target.current !== null ? target.current.style.transform = `translateX(-300px)` : null;
+            target.current[index]!.style.transform = `translateX(-300px)`;
         }
-        console.log(target)
     }
-    const onTouch = (e: React.TouchEvent<HTMLDivElement>) => {
+    const onTouch = (e: React.TouchEvent<HTMLDivElement>, index: number) => {
         if (e.touches[0].clientX - X > -150) {
-            target.current !== null ? target.current.style.transform = `translateX(-15px)` : null;
+            target.current[index]!.style.transform = `translateX(-15px)`;
         } else {
-            target.current !== null ? target.current.style.transform = `translateX(-150px)` : null;
+            target.current[index]!.style.transform = `translateX(-150px)`;
         }
     }
-    const dragEnd = (e: React.DragEvent<HTMLDivElement>) => {
-        target.current !== null ? target.current.style.transform = `translateX(0px)` : null;
-        console.log(e.clientX - X < -300 ? '是否删除？' : null)
-        console.log(target)
+    const dragEnd = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+        target.current[index]!.style.transform = `translateX(0px)`;
+        (e.clientX - X < -150) && delConfirm(`确认要删除 ${tracks[index].title} 吗？`, index)
     }
-    const touchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-        target.current !== null ? target.current.style.transform = `translateX(0px)` : null;
-        console.log(e.changedTouches[0].clientX - X < -150 ? '是否删除？' : null)
+    const touchEnd = (e: React.TouchEvent<HTMLDivElement>, index: number) => {
+        target.current[index]!.style.transform = `translateX(0px)`;
+        (e.changedTouches[0].clientX - X < -150) && delConfirm(`确认要删除 ${tracks[index].title} 吗？`, index)
     }
     return (
         <PlayListWrap className={`${isShowing?'show':'hidden'}`}>
@@ -163,25 +186,25 @@ const PlayList = ({tracks, trackIndex, setTrackIndex, isShowing, setIsShowing} :
                     </PlayListCardTitle>
                     <PlayListCardContent>
                         {tracks && (
-                            tracks.map((item: Track, index) => {
+                            tracks.map((item: Track, index: number) => {
                                 return(
                                     <PlayItem
                                         key={index}
                                         className={index === trackIndex ? 'highlight' : 'normal'}
-                                        onClick={() => setTrackIndex(index)}
-                                        onDragStart={e => dragStart(e)}
-                                        onDragOver={e => onDrag(e)}
-                                        onDragEnd={e => dragEnd(e)}
-                                        onTouchStart={e => touchStart(e)}
-                                        onTouchMove={e => onTouch(e)}
-                                        onTouchEnd={e => touchEnd(e)}
-                                        ref={target}
+                                        onClick={() => handleClick(index)}
+                                        onDragStart={e => dragStart(e, index)}
+                                        onDragOver={e => onDrag(e, index)}
+                                        onDragEnd={e => dragEnd(e, index)}
+                                        onTouchStart={e => touchStart(e, index)}
+                                        onTouchMove={e => onTouch(e, index)}
+                                        onTouchEnd={e => touchEnd(e, index)}
+                                        ref={ref => target.current[index] = ref}
                                         draggable
                                     >
                                         <PlayItemLabel>
-                                            <img src={item.cover} className="w-12 h-12 rounded-xl" />
+                                            <img src={item.cover} className="w-12 h-12 rounded-xl" alt={item.title} />
                                             <div className="flex flex-col flex-grow overflow-hidden gap-0.5">
-                                                <span className="text-ellipsis whitespace-nowrap overflow-hidden text-[18px]">{item.title}</span>
+                                                <span className="play-item_title text-ellipsis whitespace-nowrap overflow-hidden text-[18px]">{item.title}</span>
                                                 <span className="text-[14px]">{item.artist}</span>
                                             </div>
                                             <span>{getTime(item.time_length/1000)}</span>
@@ -198,6 +221,7 @@ const PlayList = ({tracks, trackIndex, setTrackIndex, isShowing, setIsShowing} :
                     </PlayListCardContent>
                 </PlayListCard>
             </PlayListStack>
+            <SimpleDialogContainer />
         </PlayListWrap>
     )
 }
