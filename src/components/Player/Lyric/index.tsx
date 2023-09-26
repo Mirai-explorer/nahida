@@ -83,7 +83,7 @@ const Line =
 
 const Lyric = ({ tracks, trackIndex, trackProgress, isPlaying }:{ tracks: Track[], trackIndex: number, trackProgress: number, isPlaying: boolean }) => {
     const [number, setNumber] = useState(0);
-    const target: React.RefObject<HTMLDivElement> = React.createRef();
+    const target: React.RefObject<HTMLDivElement> = React.createRef<HTMLDivElement>();
     const parseLrc = (str: string) => {
         const regex : RegExp = /^\[(?<time>\d{2}:\d{2}(.\d{2})?)\](?<text>.*)/;
         const lines : string[] | null = str.split("\n");

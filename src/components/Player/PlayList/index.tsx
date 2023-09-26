@@ -1,5 +1,5 @@
 import {styled} from "styled-components";
-import React, {SetStateAction} from "react";
+import React, {SetStateAction, useState} from "react";
 import {Track, getTime} from "@/components/Player/utils";
 
 const PlayListWrap =
@@ -46,7 +46,7 @@ const PlayListCard =
       height: 75vh;
       max-height: 600px;
       width: 100%;
-      transition: bottom .3s ease-in-out;
+      transition: bottom .1s ease-in;
       
       .show & {
         bottom: 0;
@@ -94,6 +94,7 @@ const PlayItem =
       min-height: 48px;
       padding: 12px;
       border-radius: .75rem;
+      transition: transform .5s ease-in-out;
 
       &.highlight {
         background-color: #eceff1;
@@ -117,7 +118,39 @@ const PlayList = ({tracks, trackIndex, setTrackIndex, isShowing, setIsShowing} :
     isShowing: boolean,
     setIsShowing: React.Dispatch<SetStateAction<boolean>>
 }) => {
-
+    const [X, setX] = useState(0)
+    const target: React.RefObject<HTMLDivElement> = React.createRef<HTMLDivElement>()
+    const dragStart = (e: React.DragEvent<HTMLDivElement>) => {
+        setX(e.clientX)
+        console.log(target)
+    }
+    const touchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+        setX(e.touches[0].clientX)
+    }
+    const onDrag = (e: React.DragEvent<HTMLDivElement>) => {
+        if (e.clientX - X > -300) {
+            target.current !== null ? target.current.style.transform = `translateX(-30px)` : null;
+        } else {
+            target.current !== null ? target.current.style.transform = `translateX(-300px)` : null;
+        }
+        console.log(target)
+    }
+    const onTouch = (e: React.TouchEvent<HTMLDivElement>) => {
+        if (e.touches[0].clientX - X > -150) {
+            target.current !== null ? target.current.style.transform = `translateX(-15px)` : null;
+        } else {
+            target.current !== null ? target.current.style.transform = `translateX(-150px)` : null;
+        }
+    }
+    const dragEnd = (e: React.DragEvent<HTMLDivElement>) => {
+        target.current !== null ? target.current.style.transform = `translateX(0px)` : null;
+        console.log(e.clientX - X < -300 ? '是否删除？' : null)
+        console.log(target)
+    }
+    const touchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+        target.current !== null ? target.current.style.transform = `translateX(0px)` : null;
+        console.log(e.changedTouches[0].clientX - X < -150 ? '是否删除？' : null)
+    }
     return (
         <PlayListWrap className={`${isShowing?'show':'hidden'}`}>
             <PlayListStack>
@@ -132,7 +165,19 @@ const PlayList = ({tracks, trackIndex, setTrackIndex, isShowing, setIsShowing} :
                         {tracks && (
                             tracks.map((item: Track, index) => {
                                 return(
-                                    <PlayItem key={index} className={index === trackIndex ? 'highlight' : 'normal'} onClick={() => setTrackIndex(index)}>
+                                    <PlayItem
+                                        key={index}
+                                        className={index === trackIndex ? 'highlight' : 'normal'}
+                                        onClick={() => setTrackIndex(index)}
+                                        onDragStart={e => dragStart(e)}
+                                        onDragOver={e => onDrag(e)}
+                                        onDragEnd={e => dragEnd(e)}
+                                        onTouchStart={e => touchStart(e)}
+                                        onTouchMove={e => onTouch(e)}
+                                        onTouchEnd={e => touchEnd(e)}
+                                        ref={target}
+                                        draggable
+                                    >
                                         <PlayItemLabel>
                                             <img src={item.cover} className="w-12 h-12 rounded-xl" />
                                             <div className="flex flex-col flex-grow overflow-hidden gap-0.5">
