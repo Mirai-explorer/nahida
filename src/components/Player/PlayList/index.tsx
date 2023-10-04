@@ -116,12 +116,16 @@ const PlayItemLabel =
       gap: 8px;
     `
 
-const PlayList = ({tracks, trackIndex, setTrackIndex, isShowing, setIsShowing} : {
+const PlayList = ({tracks, setTracks, trackIndex, setTrackIndex, isShowing, setIsShowing, updates, setUpdate, clearDB} : {
     tracks: Track[],
+    setTracks: React.Dispatch<SetStateAction<Track[]>>,
     trackIndex: number,
     setTrackIndex: React.Dispatch<SetStateAction<number>>,
     isShowing: boolean,
-    setIsShowing: React.Dispatch<SetStateAction<boolean>>
+    setIsShowing: React.Dispatch<SetStateAction<boolean>>,
+    updates: number,
+    setUpdate: React.Dispatch<SetStateAction<number>>,
+    clearDB: Function
 }) => {
     const [X, setX] = useState(0)
     const target = React.useRef<Array<HTMLDivElement | null >>([])
@@ -132,26 +136,59 @@ const PlayList = ({tracks, trackIndex, setTrackIndex, isShowing, setIsShowing} :
             confirmLabel: '确认',
             cancelLabel: '算了'
         })) {
-            console.log(index+' deleted')
+            if (tracks.length > 1) {
+                console.log(index+' deleted')
+                const _tracks = tracks.filter((item, num, arr) => {
+                    return num !== index
+                })
+                _tracks.map((item, num) => {
+                    item.unique_index = num + 1
+                })
+                console.log(_tracks)
+                setTrackIndex(trackIndex > 0 ? --trackIndex : 0)
+                setTracks(_tracks)
+                setUpdate(updates < 0 ? --updates : -1)
+            } else {
+                console.log('禁止删除')
+            }
         } else {
             console.log('nothing to do')
         }
     }
+    const clrConfirm = async () => {
+        if (await simpleConfirm({
+            title: '数据库清除警告',
+            message: '确认要删除数据库吗？（此操作无法撤销，请谨慎操作）',
+            confirmLabel: '确认',
+            cancelLabel: '算了'
+        })) {
+            clearDB().then((res: boolean) => {
+                if (res) window.location.reload()
+            })
+        } else {
+            console.log('nothing to do')
+        }
+    }
+
     useEffect(() => {
         target.current = target.current.slice(0, tracks.length)
     }, [tracks]);
+
     const handleClick = (i: number) => {
         setTrackIndex(i)
         setIsShowing(false)
     }
+
     const dragStart = (e: React.DragEvent<HTMLDivElement>, index: number) => {
         setX(e.clientX)
         console.log(index)
     }
+
     const touchStart = (e: React.TouchEvent<HTMLDivElement>, index: number) => {
         setX(e.touches[0].clientX)
         console.log(index)
     }
+
     const onDrag = (e: React.DragEvent<HTMLDivElement>, index: number) => {
         if (e.clientX - X > -300) {
             target.current[index]!.style.transform = `translateX(-30px)`;
@@ -159,6 +196,7 @@ const PlayList = ({tracks, trackIndex, setTrackIndex, isShowing, setIsShowing} :
             target.current[index]!.style.transform = `translateX(-300px)`;
         }
     }
+
     const onTouch = (e: React.TouchEvent<HTMLDivElement>, index: number) => {
         if (e.touches[0].clientX - X > -150) {
             target.current[index]!.style.transform = `translateX(-15px)`;
@@ -170,10 +208,12 @@ const PlayList = ({tracks, trackIndex, setTrackIndex, isShowing, setIsShowing} :
         target.current[index]!.style.transform = `translateX(0px)`;
         (e.clientX - X < -150) && delConfirm(`确认要删除 ${tracks[index].title} 吗？`, index)
     }
+
     const touchEnd = (e: React.TouchEvent<HTMLDivElement>, index: number) => {
         target.current[index]!.style.transform = `translateX(0px)`;
         (e.changedTouches[0].clientX - X < -150) && delConfirm(`确认要删除 ${tracks[index].title} 吗？`, index)
     }
+
     return (
         <PlayListWrap className={`${isShowing?'show':'hidden'}`}>
             <PlayListStack>
@@ -183,6 +223,7 @@ const PlayList = ({tracks, trackIndex, setTrackIndex, isShowing, setIsShowing} :
                         <PlayListGroup>
                             <div className="text-[24px]">播放列表（{tracks.length}）</div>
                         </PlayListGroup>
+                        <Control onClick={() => clrConfirm()}>-</Control>
                     </PlayListCardTitle>
                     <PlayListCardContent>
                         {tracks && (

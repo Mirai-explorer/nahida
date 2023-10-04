@@ -9,6 +9,7 @@ type Track = {
     cover: string,
     lyric: string,
     album_id: string,
+    encode_audio_id: string,
     code: string,
     timestamp: number,
     unique_index: number,
@@ -17,7 +18,8 @@ type Track = {
 
 type sTrack = {
     code: string | undefined,
-    album_id: string | undefined
+    album_id: string | undefined,
+    encode_audio_id: string | undefined
 }
 
 const fetchMusicSource = async(data: Track | sTrack) => {
@@ -26,7 +28,7 @@ const fetchMusicSource = async(data: Track | sTrack) => {
             r: 'play/getdata',
             hash: data.code,
             album_id: data.album_id,
-            dfid: '0hWg5b0DHEyF0n5Sth36GXer',
+            dfid: '3x7DYT4HlRDu3PzEsJ09LEqh',
             mid: cookie.load('kg_mid'),
             platid: 4
         }

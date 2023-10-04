@@ -14,8 +14,9 @@ const ProgressWrap =
     styled.div`
       display: flex;
       flex-direction: column;
-      height: fit-content;
-      width: inherit;
+      justify-content: center;
+      height: 40px;
+      width: 100%;
       margin: 5px 0;
       align-self: flex-end;
     `
@@ -23,30 +24,21 @@ const ProgressWrap =
 const Digits =
     styled.div`
       display: flex;
+      justify-content: space-between;
       align-items: baseline;
-      padding-left: 5%;
+      padding: 0 5%;
       min-height: 32px;
       line-height: 32px;
-
-      .symbol {
-        display: inline-flex;
-        margin: 0 0.3em;
-        font-size: 16px;
-      }
     `
 
 const Time =
     styled.div`
       letter-spacing: 0.05em;
 
-      &.current {
-        font-size: 21px;
+      &.current, &.duration  {
+        font-size: 14px;
         display: inline-flex;
-      }
-
-      &.duration {
-        font-size: 16px;
-        display: inline-flex;
+        color: rgba(255, 255, 255, .8);
       }
     `
 
@@ -64,19 +56,19 @@ const ProgressBarObject =
       outline: none;
 
       &[type="range"] {
-        height: 6px;
+        height: 4px;
         -webkit-appearance: none;
         width: 100%;
-        border-radius: 3px;
+        border-radius: 2px;
         background: #3b7677;
-        transition: background 0.2s ease;
+        transition: background 0.2s linear;
         cursor: pointer;
       }
 
       &[type="range"]::-webkit-slider-thumb {
         -webkit-appearance: none;
-        height: 16px;
-        width: 16px;
+        height: 0.75rem;
+        width: 0.75rem;
         background: #ffffff;
         border-radius: 50%; /*外观设置为圆形*/
         border: solid 0.125em rgba(205, 224, 230, 0.5); /*设置边框*/
@@ -87,11 +79,6 @@ const ProgressBarObject =
 const Progress = (props: propsType) => {
     return (
         <ProgressWrap>
-            <Digits>
-                <Time className="current">{props.past}</Time>
-                <em className="symbol">/</em>
-                <Time className="duration">{props._duration}</Time>
-            </Digits>
             <ProgressBar>
                 <ProgressBarObject
                     type="range"
@@ -106,6 +93,10 @@ const Progress = (props: propsType) => {
                     style={{ background: props.trackStyling }}
                 />
             </ProgressBar>
+            <Digits>
+                <Time className="current">{props.past}</Time>
+                <Time className="duration">{props._duration}</Time>
+            </Digits>
         </ProgressWrap>
     )
 }

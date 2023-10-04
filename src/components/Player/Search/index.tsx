@@ -10,6 +10,7 @@ type resultType = {
     FileHash: string,
     AlbumID: string,
     AlbumName: string,
+    EMixSongID: string,
     Duration: number,
     OriSongName: string,
     Auxiliary: string
@@ -150,6 +151,7 @@ const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate,
         FileHash: 'null',
         AlbumID: 'null',
         AlbumName: 'null',
+        EMixSongID: 'null',
         Duration: 0,
         OriSongName: 'null',
         Auxiliary: 'null'
@@ -185,6 +187,7 @@ const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate,
                             FileHash: item.FileHash,
                             AlbumID: item.AlbumID,
                             AlbumName: item.AlbumName,
+                            EMixSongID: item.EMixSongID,
                             Duration: item.Duration,
                             OriSongName: item.OriSongName,
                             Auxiliary: item.Auxiliary
@@ -208,7 +211,8 @@ const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate,
     const addToTracks = (dataset: DOMStringMap) => {
         let track = {
             code: dataset.hash,
-            album_id: dataset.album_id
+            album_id: dataset.album_id,
+            encode_audio_id: dataset.audio_id
         }
         let flag = false
         tracks.map(item => {
@@ -233,6 +237,7 @@ const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate,
                     cover: item.img,
                     lyric: item.lyrics,
                     album_id: item.album_id,
+                    encode_audio_id: item.encode_album_audio_id,
                     code: item.hash,
                     timestamp: new Date().getTime() + 86400000,
                     unique_index: tracks.length + 1,
@@ -241,7 +246,7 @@ const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate,
                 console.log([...tracks, track_new])
                 setIsShowing(false)
                 setTracks([...tracks, track_new])
-                setUpdate(updates + 1)
+                setUpdate(updates > 0 ? ++updates : 1)
                 setToastMessage({
                     value: item.song_name+' 已加入歌单，可在歌单选取播放',
                     timestamp: new Date().getTime()
@@ -286,6 +291,7 @@ const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate,
                                                     className="p-2 bg-sky-100 checked:bg-sky-300 me-2"
                                                     data-hash={item.FileHash}
                                                     data-album_id={item.AlbumID}
+                                                    data-audio_id={item.EMixSongID}
                                                     onClick={ (e) => {
                                                         addToTracks((e.target as HTMLElement).dataset)
                                                     }}

@@ -74,7 +74,7 @@ const Layout =
       height: 100%;
       margin: 0;
       color: white;
-      backdrop-filter: blur(8px) brightness(0.9);
+      backdrop-filter: blur(32px) brightness(0.8);
       transition: scale .3s ease-in-out;
       
       &.full {
@@ -88,7 +88,7 @@ const Layout =
     `
 
 const Player = () => {
-    const { add, deleteRecord, update, getAll } = useIndexedDB("playlist");
+    const { add, deleteRecord, update, getAll, clear } = useIndexedDB("playlist");
     // State
     const [tracks, setTracks] = useState(tracks0);
     const [trackIndex, setTrackIndex] = useState(0);
@@ -220,6 +220,7 @@ const Player = () => {
                             cover: item.img,
                             lyric: item.lyrics,
                             album_id: item.album_id,
+                            encode_audio_id: item.encode_album_audio_id,
                             code: item.hash,
                             timestamp: new Date().getTime() + 86400000,
                             unique_index: uniques[i],
@@ -236,6 +237,12 @@ const Player = () => {
         }))
     }
 
+    const clearDB = async () => {
+        let flag = false
+        await clear().then(() => flag = true).catch(() => flag = false)
+        return flag
+    }
+
     useEffect(() => {
         getAll().then((tracks: Track[]) => {
             console.log('tracks check:',tracks)
@@ -248,6 +255,10 @@ const Player = () => {
     useEffect(() => {
         updates > 0 && tracks.map((data, i) => {
             update(data).then(r => console.log('a piece of data saved'))
+        })
+        updates < 0 && tracks.map((data, i) => {
+            update(data).then(r => console.log('a piece of data deleted'))
+            deleteRecord(tracks.length + 1).then(r => console.log('arrangement completed'))
         })
     }, [updates]);
 
@@ -270,7 +281,7 @@ const Player = () => {
                     } else if (e.message.includes('user didn\'t interact')) {
                         value = '当前浏览器禁止自动播放，请手动点击播放';
                     } else {
-                        value = '出现不可预知的错误';
+                        value = '出现不可预知的错误，错误信息：'+e.message;
                     }
                     setToastMessage({
                         value: value,
@@ -312,7 +323,7 @@ const Player = () => {
                     } else if (e.message.includes('user didn\'t interact')) {
                         value = '当前浏览器禁止自动播放，请手动点击播放';
                     } else {
-                        value = '出现不可预知的错误';
+                        value = '出现不可预知的错误，错误信息：'+e.message;
                     }
                     setToastMessage({
                         value: value,
@@ -335,19 +346,12 @@ const Player = () => {
         };
     }, []);
 
-
-
     const past = getTime(trackProgress);
     const _duration = getTime(duration);
 
     return (
         <MiraiPlayer className={`bg-cover bg-center bg-no-repeat transition-all duration-300 ease-out`} style={{backgroundImage: `url(${tracks[trackIndex].cover})`}}>
             <Layout className={playListShowing ? 'scale' : 'full'}>
-                <Title
-                    title={title || "音乐感动生活"}
-                    subtitle={subtitle || "Mirai云端播放器"}
-                    singer={artist || "未知歌手"}
-                />
                 <Cover
                     rotate={rotate}
                     url={cover}
@@ -360,6 +364,12 @@ const Player = () => {
                     trackIndex={trackIndex}
                     trackProgress={trackProgress}
                     isPlaying={isPlaying}
+                />
+                <Title
+                    title={title || "音乐感动生活"}
+                    subtitle={subtitle || "Mirai云端播放器"}
+                    singer={artist || "未知歌手"}
+                    trackIndex={trackIndex}
                 />
                 <Progress
                     past={past}
@@ -391,10 +401,14 @@ const Player = () => {
             <ToastContainer />
             <PlayList
                 tracks={tracks}
+                setTracks={setTracks}
                 trackIndex={trackIndex}
                 setTrackIndex={setTrackIndex}
                 isShowing={playListShowing}
                 setIsShowing={setPlayListShowing}
+                updates={updates}
+                setUpdate={setUpdate}
+                clearDB={clearDB}
             />
         </MiraiPlayer>
     )

@@ -12,7 +12,6 @@ const LyricWrap =
       display: flex;
       align-items: center;
       flex: 1;
-      padding: 2rem 0;
 
       ::-webkit-scrollbar {
         width: 8px;
@@ -33,7 +32,7 @@ const LyricWrap =
 const Scroll =
     styled.div`
       width: 100%;
-      height: 80px;
+      height: 64px;
       overflow-y: hidden;
       overflow-x: hidden;
     `
@@ -45,17 +44,18 @@ const Waterfall =
       letter-spacing: 0.1em;
       overflow: hidden;
       position: relative;
-      transition: top .15s linear;
+      transition: top 80ms ease-out;
       top: 0;
     `
 
 const Line =
     styled.div`
       display: inline-flex;
-      line-height: 40px;
-      opacity: 0.1;
+      justify-content: center;
+      line-height: 32px;
+      opacity: .01;
       visibility: visible;
-      font-size: 20px;
+      font-size: 18px;
       white-space: nowrap;
       margin: 0 8vw;
       width: 84vw;
@@ -67,8 +67,8 @@ const Line =
         visibility: visible;
         font-weight: 700;
         opacity: 1;
-        font-size: 24px;
-        transition: font-size .1s ease-in, opacity .15s ease-in;
+        font-size: 22px;
+        transition: font-size 120ms ease-in, opacity 120ms ease-in;
       }
       
       &.await {
@@ -76,8 +76,8 @@ const Line =
         font-weight: 500;
         color: #fff;
         opacity: .6;
-        font-size: 20px;
-        transition: font-size .1s linear, opacity .1s linear;
+        font-size: 18px;
+        transition: font-size 120ms ease-in, opacity 120ms ease-in;
       }
     `
 
@@ -111,7 +111,7 @@ const Lyric = ({ tracks, trackIndex, trackProgress, isPlaying }:{ tracks: Track[
 
     const syncLyric = (lyrics: lyricType[], time: number) => {
         const scores : number[] = [];
-        lyrics.forEach((lyric : lyricType) => {
+        lyrics.map((lyric : lyricType) => {
             const score = time - lyric.offset;
             if (score >= -0.3) {
                 scores.push(score);
@@ -124,7 +124,7 @@ const Lyric = ({ tracks, trackIndex, trackProgress, isPlaying }:{ tracks: Track[
 
     useEffect(() => {
         setNumber(syncLyric(lyric, trackProgress) as number);
-        target.current !== null ? target.current.style.top = -(40 * number)+'px' : null;
+        target.current !== null ? target.current.style.top = -(32 * number)+'px' : null;
     }, [trackProgress]);
 
     return (

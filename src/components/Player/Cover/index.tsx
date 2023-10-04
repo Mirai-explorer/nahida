@@ -15,6 +15,10 @@ const rotate = keyframes`
     `
 
 const CoverWrap = styled.div`
+    padding-top: 2rem;
+`
+
+const CoverShell = styled.div`
       border-radius: 50%;
       box-shadow: 0 3px 6px rgba(0,0,0,.16);
       animation: ${rotate} 15s linear infinite;
@@ -27,16 +31,16 @@ const CoverWrap = styled.div`
       }
       
       .source {
-        min-width: 240px;
-        min-height: 240px;
+        min-width: 200px;
+        min-height: 200px;
         max-width: 320px;
         max-height: 320px;
         border-radius: inherit;
       }
 
       .source[data-size="large"] {
-        width: 75vw;
-        height: 75vw;
+        width: 70vw;
+        height: 70vw;
       }
 
       .source[data-size="default"] {
@@ -45,22 +49,24 @@ const CoverWrap = styled.div`
       }
 
       .source[data-size="mini"] {
-        width: 25vw;
-        height: 25vw;
+        width: 20vw;
+        height: 20vw;
       }
     `
 
 const Cover = (props: propsType) => {
     return (
-        <CoverWrap style={{ animationPlayState: `${props.rotate}`}} onDoubleClick={props.onDoubleClick}>
-            <Image
-                className="source"
-                src={props.url}
-                data-size={props["data-size"]}
-                alt={props.desc}
-                width="320"
-                height="320"
-            />
+        <CoverWrap>
+            <CoverShell style={{ animationPlayState: `${props.rotate}`}} onDoubleClick={props.onDoubleClick}>
+                <Image
+                    className="source"
+                    src={props.url}
+                    data-size={props["data-size"]}
+                    alt={props.desc}
+                    width="320"
+                    height="320"
+                />
+            </CoverShell>
         </CoverWrap>
     )
 };
