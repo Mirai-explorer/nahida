@@ -33,7 +33,7 @@ const MiraiPlayer =
       width: 100%;
       height: 100%;
       overflow: hidden;
-      font-family: -apple-system,BlinkMacSystemFont,"SF Pro SC",PingFang SC,Helvetica Neue,Microsoft YaHei,Source Han Sans SC,Noto Sans CJK SC,WenQuanYi Micro Hei,sans-serif;
+      font-family: -apple-system,BlinkMacSystemFont,"SF Pro Text",PingFang SC,Helvetica Neue,Microsoft YaHei,Source Han Sans SC,Noto Sans CJK SC,WenQuanYi Micro Hei,sans-serif;
       -webkit-font-smoothing: antialiased;
       -webkit-tap-highlight-color: transparent;
       
@@ -237,12 +237,6 @@ const Player = () => {
         }))
     }
 
-    const clearDB = async () => {
-        let flag = false
-        await clear().then(() => flag = true).catch(() => flag = false)
-        return flag
-    }
-
     useEffect(() => {
         getAll().then((tracks: Track[]) => {
             console.log('tracks check:',tracks)
@@ -408,7 +402,6 @@ const Player = () => {
                 setIsShowing={setPlayListShowing}
                 updates={updates}
                 setUpdate={setUpdate}
-                clearDB={clearDB}
             />
         </MiraiPlayer>
     )

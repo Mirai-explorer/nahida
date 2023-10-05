@@ -114,7 +114,7 @@ const PlayItemLabel =
       gap: 8px;
     `
 
-const PlayList = ({tracks, setTracks, trackIndex, setTrackIndex, isShowing, setIsShowing, updates, setUpdate, clearDB} : {
+const PlayList = ({tracks, setTracks, trackIndex, setTrackIndex, isShowing, setIsShowing, updates, setUpdate} : {
     tracks: Track[],
     setTracks: React.Dispatch<SetStateAction<Track[]>>,
     trackIndex: number,
@@ -122,8 +122,7 @@ const PlayList = ({tracks, setTracks, trackIndex, setTrackIndex, isShowing, setI
     isShowing: boolean,
     setIsShowing: React.Dispatch<SetStateAction<boolean>>,
     updates: number,
-    setUpdate: React.Dispatch<SetStateAction<number>>,
-    clearDB: Function
+    setUpdate: React.Dispatch<SetStateAction<number>>
 }) => {
     const [X, setX] = useState(0)
     const target = React.useRef<Array<HTMLDivElement | null >>([])
@@ -160,9 +159,9 @@ const PlayList = ({tracks, setTracks, trackIndex, setTrackIndex, isShowing, setI
             confirmLabel: '确认',
             cancelLabel: '算了'
         })) {
-            clearDB().then((res: boolean) => {
-                if (res) window.location.reload()
-            })
+            window.indexedDB.deleteDatabase("MiraiDB").onsuccess = () => {
+                window.location.reload()
+            }
         } else {
             console.log('nothing to do')
         }
@@ -219,7 +218,7 @@ const PlayList = ({tracks, setTracks, trackIndex, setTrackIndex, isShowing, setI
                     <PlayListCardTitle>
                         <Control onClick={() => setIsShowing(false)}>×</Control>
                         <PlayListGroup>
-                            <div className="text-[24px]">播放列表（{tracks.length}）</div>
+                            <div className="text-[20px]">播放列表（{tracks.length}）</div>
                         </PlayListGroup>
                         <Control onClick={() => clrConfirm()}>-</Control>
                     </PlayListCardTitle>

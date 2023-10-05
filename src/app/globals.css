@@ -48,9 +48,11 @@
   src:url("../public/assets/fonts/sf-pro-display_regular.woff2") format("woff2");
 }
 
+
+
 body {
   /*color: rgb(var(--foreground-rgb));*/
-  font-family: -apple-system,BlinkMacSystemFont,"SF Pro SC","SF Pro Text",PingFang SC,Helvetica Neue,Microsoft YaHei,Source Han Sans SC,Noto Sans CJK SC,WenQuanYi Micro Hei,sans-serif;
+  font-family: -apple-system,BlinkMacSystemFont,"SF Pro Text",PingFang SC,Helvetica Neue,Microsoft YaHei,Source Han Sans SC,Noto Sans CJK SC,WenQuanYi Micro Hei,sans-serif;
   line-height: 1.15;
 }
 
