@@ -13,7 +13,7 @@ const PlayListWrap =
       width: 100%;
       height: 100%;
       display: block;
-      transition: background-color .2s ease-out, visibility .2s ease;
+      transition: background-color .1s ease-out, visibility .1s ease;
 
       &.show {
         visibility: visible;
@@ -142,7 +142,7 @@ const PlayList = ({tracks, setTracks, trackIndex, setTrackIndex, isShowing, setI
                     item.unique_index = num + 1
                 })
                 console.log(_tracks)
-                setTrackIndex(trackIndex > 0 ? --trackIndex : 0)
+                setTrackIndex(index >= trackIndex ? (trackIndex < _tracks.length ? trackIndex : 0) : --trackIndex)
                 setTracks(_tracks)
                 setUpdate(updates < 0 ? --updates : -1)
             } else {
