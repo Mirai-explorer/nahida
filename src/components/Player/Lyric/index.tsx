@@ -11,6 +11,7 @@ const LyricWrap =
     styled.div`
       display: flex;
       align-items: center;
+      width: 100%;
       flex: 1;
 
       ::-webkit-scrollbar {
@@ -44,8 +45,12 @@ const Waterfall =
       letter-spacing: 0.1em;
       overflow: hidden;
       position: relative;
-      transition: top 80ms ease-out;
-      top: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 100ms ease-out;
+      transform: translateY(0px);
+      will-change: transform;
     `
 
 const Line =
@@ -60,15 +65,15 @@ const Line =
       margin: 0 8vw;
       width: 84vw;
       white-space: nowrap;
-      overflow: hidden;
+      overflow: scroll;
       letter-spacing: 2px;
       
       &.bubble {
         visibility: visible;
         font-weight: 700;
         opacity: 1;
-        font-size: 22px;
-        transition: font-size 120ms ease-in, opacity 120ms ease-in;
+        font-size: 20px;
+        transition: font-size 80ms ease-out, opacity 80ms ease;
       }
       
       &.await {
@@ -76,8 +81,8 @@ const Line =
         font-weight: 500;
         color: #fff;
         opacity: .6;
-        font-size: 18px;
-        transition: font-size 120ms ease-in, opacity 120ms ease-in;
+        font-size: 16px;
+        transition: font-size 80ms ease-out, opacity 80ms ease;
       }
     `
 
@@ -124,7 +129,7 @@ const Lyric = ({ tracks, trackIndex, trackProgress, isPlaying }:{ tracks: Track[
 
     useEffect(() => {
         setNumber(syncLyric(lyric, trackProgress) as number);
-        target.current !== null ? target.current.style.top = -(32 * number)+'px' : null;
+        target.current !== null ? target.current.style.transform = `translateY(${-(32 * number)}px)` : null;
     }, [trackProgress]);
 
     return (
