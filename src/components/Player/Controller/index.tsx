@@ -8,6 +8,7 @@ import { styled, keyframes } from "styled-components";
 import Loop from "@/public/common/Loop";
 import Random from "@/public/common/Random";
 import SingleCycle from "@/public/common/SingleCycle";
+import Fullscreen from "@/public/common/Fullscreen";
 
 const ControllerWrap =
     styled.div`
@@ -35,7 +36,7 @@ const ControllerInner =
 const Left =
     styled.div`
       display: flex;
-      width: fit-content;
+      width: 48px;
       height: 100%;
       align-items: center;
       
@@ -54,7 +55,7 @@ const Center =
       height: 60px;
       
       button {
-        margin: 15px;
+        margin: .75rem;
         background: #ffffff30;
         box-shadow: 0 0 3px #00000016;
         border-radius: 50%;
@@ -90,6 +91,10 @@ const Button =
       border: none;
       cursor: pointer;
     `
+
+const setFullscreen = () => {
+    document.fullscreenElement !== null ? document.exitFullscreen() : document.documentElement.requestFullscreen()
+}
 
 const Controller = ({ isPlaying, onPlayPauseClick, onPrevClick, onNextClick, onPlayListClick} : {
     isPlaying : boolean,
@@ -159,6 +164,14 @@ const Controller = ({ isPlaying, onPlayPauseClick, onPrevClick, onNextClick, onP
                 </Button>
             </Center>
             <Right>
+                <Button
+                    type="button"
+                    className="songlist"
+                    aria-label="SongList"
+                    onClick={() => setFullscreen()}
+                >
+                    <Fullscreen />
+                </Button>
                 <Button
                     type="button"
                     className="songlist"
