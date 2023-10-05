@@ -14,11 +14,9 @@ const ProgressWrap =
     styled.div`
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      height: 40px;
+      justify-content: space-between;
+      height: 48px;
       width: 100%;
-      margin: 5px 0;
-      align-self: flex-end;
     `
 
 const Digits =
@@ -26,9 +24,7 @@ const Digits =
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      padding: 0 5%;
-      min-height: 32px;
-      line-height: 32px;
+      height: 24px;
     `
 
 const Time =
@@ -44,15 +40,14 @@ const Time =
 
 const ProgressBar =
     styled.div`
-      width: 90%;
-      height: fit-content;
-      margin: 0 auto;
+      width: 100%;
+      height: 16px;
     `
 
 const ProgressBarObject =
     styled.input`
       border-radius: 0;
-      font-size: 15px;
+      font-size: 16px;
       outline: none;
 
       &[type="range"] {
@@ -61,7 +56,7 @@ const ProgressBarObject =
         width: 100%;
         border-radius: 2px;
         background: #3b7677;
-        transition: background 0.2s linear;
+        transition: background 0.1s linear;
         cursor: pointer;
       }
 

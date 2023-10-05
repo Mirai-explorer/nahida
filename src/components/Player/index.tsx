@@ -73,6 +73,7 @@ const Layout =
       width: 100%;
       height: 100%;
       margin: 0;
+      padding: 0 5%;
       color: white;
       backdrop-filter: blur(32px) brightness(0.8);
       transition: scale .2s cubic-bezier(.42,.19,.62,1);
@@ -193,11 +194,11 @@ const Player = () => {
         const time = new Date().getTime();
         let uniques: number[] =  [];
         axios.all(
-            tracks.map((item: Track) => {
+            tracks.map((item: Track, id: number) => {
                 if (item.timestamp > time) {
-                    console.log('skipped',item.unique_index)
+                    console.log('skipped',id)
                 } else {
-                    console.log('ready to update',item.unique_index)
+                    console.log('ready to update',id)
                     uniques.push(item.unique_index)
                     return fetchMusicSource(item)
                 }
