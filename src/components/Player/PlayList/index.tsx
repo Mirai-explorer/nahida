@@ -13,17 +13,15 @@ const PlayListWrap =
       width: 100%;
       height: 100%;
       display: block;
-      transition: background-color .3s ease-in-out, opacity .3s ease-in-out, visibility .3s;
+      transition: background-color .2s ease-out, visibility .2s ease;
 
       &.show {
         visibility: visible;
-        opacity: 1;
         background-color: rgba(0, 0, 0, .3);
       }
 
       &.hidden {
         visibility: hidden;
-        opacity: 0;
         background-color: transparent;
       }
     `
@@ -47,7 +45,7 @@ const PlayListCard =
       height: 75vh;
       max-height: 600px;
       width: 100%;
-      transition: bottom .1s ease-in;
+      transition: bottom .2s ease;
       
       .show & {
         bottom: 0;

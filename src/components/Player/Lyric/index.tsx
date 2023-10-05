@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import {Track} from "@/components/Player/utils";
 
@@ -52,11 +52,11 @@ const Line =
     styled.div`
       display: inline-flex;
       justify-content: center;
+      min-height: 32px;
       line-height: 32px;
       opacity: .01;
       visibility: visible;
       font-size: 18px;
-      white-space: nowrap;
       margin: 0 8vw;
       width: 84vw;
       white-space: nowrap;
@@ -85,9 +85,9 @@ const Lyric = ({ tracks, trackIndex, trackProgress, isPlaying }:{ tracks: Track[
     const [number, setNumber] = useState(0);
     const target: React.RefObject<HTMLDivElement> = React.createRef<HTMLDivElement>();
     const parseLrc = (str: string) => {
-        const regex : RegExp = /^\[(?<time>\d{2}:\d{2}(.\d{2})?)\](?<text>.*)/;
-        const lines : string[] | null = str.split("\n");
-        const output : lyricType[] = [];
+        const regex: RegExp = /^\[(?<time>\d{2}:\d{2}(.\d{2})?)\](?<text>.*)/;
+        const lines: string[] | null = str.split("\n");
+        const output: lyricType[] = [];
         const parseTime = (time: string) => {
             const minsec = time.split(":");
             const min = parseInt(minsec[0]) * 60;
@@ -95,14 +95,14 @@ const Lyric = ({ tracks, trackIndex, trackProgress, isPlaying }:{ tracks: Track[
             return min + sec;
         };
         lines.forEach((line) => {
-            const match : RegExpMatchArray | null = line.match(regex);
-            if (match === null) return;
-            // @ts-ignore
-            const { time, text } = match.groups;
-            output.push({
-                offset: Number(parseTime(time).toFixed(2)),
-                text: text.trim()
-            });
+            const match: RegExpMatchArray | null = line.match(regex);
+            if (match && match.groups) {
+                const { time, text } = match.groups;
+                output.push({
+                    offset: Number(parseTime(time).toFixed(2)),
+                    text: text.trim()
+                });
+            }
         });
         return output;
     };

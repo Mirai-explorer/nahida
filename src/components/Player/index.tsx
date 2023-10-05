@@ -75,7 +75,7 @@ const Layout =
       margin: 0;
       color: white;
       backdrop-filter: blur(32px) brightness(0.8);
-      transition: scale .3s ease-in-out;
+      transition: scale .2s cubic-bezier(.42,.19,.62,1);
       
       &.full {
         scale: 1.0;

@@ -22,14 +22,37 @@ const carousel =
     keyframes`
       0% {
         transform: translateX(0%);
+        opacity: 1;
       }
 
-      20% {
+      15% {
         transform: translateX(0%);
+        opacity: 1;
+      }
+
+      85% {
+        transform: translateX(-100%);
+        opacity: 1;
+      }
+
+      90% {
+        transform: translateX(-100%);
+        opacity: 1;
+      }
+
+      95% {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+
+      99% {
+        transform: translateX(-20%);
+        opacity: .6;
       }
 
       100% {
-        transform: translateX(-100%);
+        transform: translateX(0%);
+        opacity: 1;
       }
     `
 
@@ -53,6 +76,7 @@ const Line =
         animation-timing-function: linear;
         animation-iteration-count: infinite;
         animation-duration: 0s;
+        transition: transform .1s linear, opacity .1s ease-out;
       }
       
       .secondary {
