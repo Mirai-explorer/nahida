@@ -181,7 +181,7 @@ const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate,
                 setLoading(false)
                 if (!res.data.err_code) {
                     let list: resultType[] = [];
-                    res.data.data.lists.map((item: resultType)=>{
+                    res.data.data.lists.length > 0 && res.data.data.lists.map((item: resultType)=>{
                         list.push({
                             FileName: item.FileName,
                             FileHash: item.FileHash,
@@ -206,6 +206,12 @@ const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate,
                 })
                 console.error('Please try again later:',err.message)
             })
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            doSearch(value)
+        }
     }
 
     const addToTracks = (dataset: DOMStringMap) => {
@@ -273,14 +279,14 @@ const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate,
                             <SearchCardSwitch>
                                 <Kugou />
                             </SearchCardSwitch>
-                            <SearchCardInput type="text" autoFocus onChange={e => watchInputValue(e.target.value)} />
+                            <SearchCardInput type="text" autoFocus onChange={e => watchInputValue(e.target.value)} onKeyDown={e => handleKeyDown(e)} />
                             <SearchCardButton name="search" onClick={() => doSearch(value)}>
                                 <SearchIcon />
                             </SearchCardButton>
                         </SearchGroup>
                     </SearchCardTitle>
                     <SearchCardContent>
-                        {!loading && result[0].AlbumID !== 'null' && (
+                        {!loading && result.length > 0 && result[0].AlbumID !== 'null' && (
                             result.map((item: resultType, index) => {
                                 return(
                                     <SearchItem key={index}>
@@ -304,18 +310,18 @@ const Search = ({isShowing, setIsShowing, setTracks, tracks, updates, setUpdate,
                                 )
                             })
                         )}
-                        {!loading && result[0].AlbumID === 'null' && (
-                            <div>
+                        {!loading && result.length > 0 && result[0].AlbumID === 'null' && (
+                            <div className="flex justify-center">
                                 输入歌曲或歌手名称开始搜索吧
                             </div>
                         )}
                         {!loading && result.length === 0 && (
-                            <div>
+                            <div className="flex justify-center">
                                 没有查询到相关结果
                             </div>
                         )}
                         {loading && (
-                            <div>
+                            <div className="flex justify-center">
                                 搜索中，请等待...
                             </div>
                         )}
