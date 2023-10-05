@@ -48,7 +48,7 @@ const Waterfall =
       display: flex;
       flex-direction: column;
       align-items: center;
-      transition: transform 100ms ease-out;
+      transition: transform 150ms ease-out;
       transform: translateY(0px);
       will-change: transform;
     `
@@ -61,7 +61,7 @@ const Line =
       line-height: 32px;
       opacity: .01;
       visibility: visible;
-      font-size: 18px;
+      font-size: 16px;
       margin: 0 8vw;
       width: 84vw;
       white-space: nowrap;
@@ -73,7 +73,7 @@ const Line =
         font-weight: 700;
         opacity: 1;
         font-size: 20px;
-        transition: font-size 80ms ease-out, opacity 80ms ease;
+        transition: font-size 100ms ease-out, opacity 100ms ease;
       }
       
       &.await {
@@ -82,7 +82,7 @@ const Line =
         color: #fff;
         opacity: .6;
         font-size: 16px;
-        transition: font-size 80ms ease-out, opacity 80ms ease;
+        transition: font-size 100ms ease-out, opacity 100ms ease;
       }
     `
 
