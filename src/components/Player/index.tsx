@@ -36,6 +36,8 @@ const MiraiPlayer =
       font-family: -apple-system,BlinkMacSystemFont,"SF Pro Text",PingFang SC,Helvetica Neue,Microsoft YaHei,Source Han Sans SC,Noto Sans CJK SC,WenQuanYi Micro Hei,sans-serif;
       -webkit-font-smoothing: antialiased;
       -webkit-tap-highlight-color: transparent;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
       
       *::selection {
         background-color: rgba(218,218,218,.1);

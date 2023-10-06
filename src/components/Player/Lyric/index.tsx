@@ -10,6 +10,7 @@ type lyricType = {
 const LyricWrap =
     styled.div`
       display: flex;
+      justify-content: center;
       align-items: center;
       width: 100%;
       flex: 1;
@@ -32,7 +33,7 @@ const LyricWrap =
 
 const Scroll =
     styled.div`
-      width: 100%;
+      width: 90%;
       height: 64px;
       overflow-y: hidden;
       overflow-x: hidden;
@@ -45,44 +46,36 @@ const Waterfall =
       letter-spacing: 0.1em;
       overflow: hidden;
       position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: transform 150ms ease-out;
+      display: grid;
+      grid-auto-rows: 32px;
+      transition: transform 120ms linear;
       transform: translateY(0px);
       will-change: transform;
     `
 
 const Line =
     styled.div`
-      display: inline-flex;
-      justify-content: center;
-      min-height: 32px;
-      line-height: 32px;
+      display: inline-grid;
+      text-align: center;
+      align-items: center;
       opacity: .01;
-      visibility: visible;
       font-size: 16px;
-      margin: 0 8vw;
-      width: 84vw;
+      font-weight: 500;
+      width: 100%;
       white-space: nowrap;
       overflow: scroll;
       letter-spacing: 2px;
+      will-change: opacity, font-size, font-weight;
+      transition: all 100ms ease;
       
       &.bubble {
-        visibility: visible;
         font-weight: 700;
         opacity: 1;
         font-size: 20px;
-        transition: font-size 100ms ease-out, opacity 100ms ease;
       }
       
       &.await {
-        visibility: visible;
-        font-weight: 500;
-        color: #fff;
         opacity: .6;
-        font-size: 16px;
-        transition: font-size 100ms ease-out, opacity 100ms ease;
       }
     `
 
@@ -156,7 +149,7 @@ const Lyric = ({ tracks, trackIndex, trackProgress, isPlaying }:{ tracks: Track[
                             );
                         })
                     ) : (
-                        <div className="bubble">暂无歌词</div>
+                        <Line className="bubble">暂无歌词</Line>
                     )}
                 </Waterfall>
             </Scroll>
