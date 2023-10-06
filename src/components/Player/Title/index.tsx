@@ -1,12 +1,16 @@
-import { styled } from "styled-components";
-import Marquee from "react-fast-marquee";
-import React, {createRef, useEffect} from "react";
+import {keyframes, styled} from "styled-components";
+import React, {useEffect} from "react";
 
 type propsType = {
     title: string;
     subtitle: string;
     singer: string;
     trackIndex: number;
+}
+
+interface customCSSProperties extends React.CSSProperties {
+    '--width': string,
+    '--duration': string
 }
 
 const TitleWrap =
@@ -18,6 +22,33 @@ const TitleWrap =
       height: 72px;
       color: white;
       overflow: hidden;
+    `
+
+const marquee_anime =
+    keyframes`
+      0% {
+        transform: translateX(0%);
+        opacity: 0;
+      }
+
+      5% {
+        transform: translateX(0%);
+        opacity: 1;
+      }
+
+      10% {
+        transform: translateX(0%);
+        opacity: 1;
+      }
+
+      90% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateX(var(--width));
+        opacity: 0;
+      }
     `
 
 const Line =
@@ -32,6 +63,14 @@ const Line =
         font-weight: bold;
         text-shadow: 0 3px 6px rgba(0,0,0,.16);
         letter-spacing: 0.06em;
+      }
+      
+      .marquee {
+        animation-name: ${marquee_anime};
+        animation-duration: var(--duration);
+        animation-iteration-count: infinite;
+        animation-delay: 0s;
+        animation-timing-function: linear;
       }
       
       .secondary {
@@ -54,32 +93,46 @@ const Line =
     `
 
 const Title = (props: propsType) => {
-    const [move1, setMove1] = React.useState(false)
-    const [move2, setMove2] = React.useState(false)
     const ref1 = React.createRef<HTMLDivElement>()
     const ref2 = React.createRef<HTMLDivElement>()
+    const [width1, setWidth1] = React.useState(0)
+    const [width2, setWidth2] = React.useState(0)
+
     useEffect(() => {
-        ref1.current && (ref1.current!.clientWidth > document.documentElement.clientWidth*0.9 ? setMove1(true) : setMove1(false))
-        ref2.current && (ref2.current!.clientWidth > document.documentElement.clientWidth*0.9 ? setMove2(true) : setMove2(false))
-    }, [ref1, ref2]);
+        ref1.current!.style.animation = 'none'
+        ref2.current!.style.animation = 'none'
+        if (ref1.current!.clientWidth < ref1.current!.scrollWidth) {
+            setWidth1(ref1.current!.scrollWidth)
+            ref1.current!.style.animation = ''
+        }
+        if (ref2.current!.clientWidth < ref2.current!.scrollWidth) {
+            setWidth2(ref2.current!.scrollWidth)
+            ref2.current!.style.animation = ''
+        }
+    }, [props.trackIndex]);
+
+    const style1: customCSSProperties = {
+        '--width': -width1+'px',
+        '--duration': (width1/30).toFixed(2)+'s'
+    }
+
+    const style2: customCSSProperties = {
+        '--width': -width2+'px',
+        '--duration': (width2/30).toFixed(2)+'s'
+    }
+
     return (
         <TitleWrap>
             <Line className="primary">
-                <Marquee speed={30} delay={3} play={move1}>
-                    <div className="content" ref={ref1}>
-                        <span>{props.title}</span>
-                        <span className="secondary">（{props.subtitle}）</span>
-                        <div className="blank_fill"></div>
-                    </div>
-                </Marquee>
+                <div className="marquee" id="m1" ref={ref1} style={style1}>
+                    <span>{props.title}</span>
+                    <span className="secondary">（{props.subtitle}）</span>
+                </div>
             </Line>
             <Line className="tertiary">
-                <Marquee speed={30} delay={3} play={move2}>
-                    <div className="content" ref={ref2}>
-                        <span>{props.singer}</span>
-                        <div className="blank_fill"></div>
-                    </div>
-                </Marquee>
+                <div className="marquee" id="m2" ref={ref2} style={style2}>
+                    <span>{props.singer}</span>
+                </div>
             </Line>
         </TitleWrap>
     )
