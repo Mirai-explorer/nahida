@@ -26,6 +26,7 @@ const SearchWrap =
       backdrop-filter: blur(8px) contrast(0.5);
       background: rgba(255,255,255,.3);
       z-index: 999;
+      content-visibility: auto;
       
       &.show {
         display: block;

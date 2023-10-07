@@ -77,6 +77,7 @@ const Progress = (props: propsType) => {
             <ProgressBar>
                 <ProgressBarObject
                     type="range"
+                    name="progress-bar"
                     value={props.trackProgress}
                     step="0.5"
                     min="0"

@@ -22,6 +22,25 @@ import PlayList from "@/components/Player/PlayList";
 
 initDB(DBConfig);
 
+type itemType = {
+    play_url: string | undefined,
+    song_name: string,
+    album_name: string,
+    author_name: string,
+    img: string,
+    lyrics: string,
+    album_id: string,
+    encode_album_audio_id: string,
+    hash: string,
+    is_free_part: boolean,
+    timelength: number,
+    trans_param: {
+        hash_offset: {
+            end_ms: number
+        }
+    }
+}
+
 // 样式
 const MiraiPlayer =
     styled.div.attrs((/* props */) => ({ tabIndex: 0 }))`
@@ -34,10 +53,14 @@ const MiraiPlayer =
       height: 100%;
       overflow: hidden;
       font-family: -apple-system,BlinkMacSystemFont,"SF Pro Text",PingFang SC,Helvetica Neue,Microsoft YaHei,Source Han Sans SC,Noto Sans CJK SC,WenQuanYi Micro Hei,sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -webkit-tap-highlight-color: transparent;
-      -webkit-overflow-scrolling: touch;
       scroll-behavior: smooth;
+      /* 非标准属性：提供字体抗锯齿效果 */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      /* 非标准属性：设置点击链接的时候出现的高亮颜色，transparent 为移除 */
+      -webkit-tap-highlight-color: transparent;
+      /* 非标准属性： */
+      -webkit-overflow-scrolling: touch;
       
       *::selection {
         background-color: rgba(218,218,218,.1);
@@ -77,6 +100,7 @@ const Layout =
       margin: 0;
       padding: 0 5%;
       color: white;
+      -webikt-backdrop-filter: blur(32px) brightness(0.8);
       backdrop-filter: blur(32px) brightness(0.8);
       transition: scale .2s cubic-bezier(.42,.19,.62,1);
       
@@ -91,7 +115,7 @@ const Layout =
     `
 
 const Player = () => {
-    const { add, deleteRecord, update, getAll, clear } = useIndexedDB("playlist");
+    const { deleteRecord, update, getAll } = useIndexedDB("playlist");
     // State
     const [tracks, setTracks] = useState(tracks0);
     const [trackIndex, setTrackIndex] = useState(0);
@@ -132,6 +156,7 @@ const Player = () => {
     const startTimer = () => {
         // Clear any timers already running
         clearInterval(intervalRef.current);
+        console.log('timer fired')
 
         intervalRef.current = window.setInterval(() => {
             if (audioRef.current!.ended) {
@@ -194,7 +219,7 @@ const Player = () => {
 
     const handleAllUpdates = (tracks: Track[]) => {
         const time = new Date().getTime();
-        let uniques: number[] =  [];
+        let uniques = [];
         axios.all(
             tracks.map((item: Track, id: number) => {
                 if (item.timestamp > time) {
@@ -212,8 +237,8 @@ const Player = () => {
             })
             tasks.map((res, i) => {
                 if (res) {
-                    let item = res.data.data;
-                    let regex = /^(http|https):\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?$/;
+                    let item: itemType = res.data.data;
+                    let regex = /^(http|https):\/\/[a-zA-Z0-9\-.]+\.[a-zA-Z]{2,}(\/\S*)?$/;
                     if (typeof item.play_url === 'string' && regex.test(item.play_url)) {
                         update({
                             title: item.song_name,
@@ -226,7 +251,7 @@ const Player = () => {
                             encode_audio_id: item.encode_album_audio_id,
                             code: item.hash,
                             timestamp: new Date().getTime() + 86400000,
-                            unique_index: uniques[i],
+                            unique_index: i + 1,
                             time_length: !item.is_free_part ? item.timelength : item.trans_param.hash_offset.end_ms
                         }).then(() => {
                             console.log(i,'saved')
@@ -240,6 +265,22 @@ const Player = () => {
         }))
     }
 
+    const handlePlayError = (e: Error) => {
+        let value: string;
+        if (e.message.includes('no supported sources')) {
+            value = '播放源出错';
+        } else if (e.message.includes('user didn\'t interact')) {
+            value = '当前浏览器禁止自动播放，请手动点击播放';
+        } else {
+            value = '出现不可预知的错误，错误信息：'+e.message;
+        }
+        setToastMessage({
+            value: value,
+            timestamp: new Date().getTime()
+        });
+        console.error(e.message)
+    }
+
     useEffect(() => {
         getAll().then((tracks: Track[]) => {
             console.log('tracks check:',tracks)
@@ -250,13 +291,12 @@ const Player = () => {
     }, []);
 
     useEffect(() => {
-        updates > 0 && tracks.map((data, i) => {
-            update(data).then(r => console.log('a piece of data saved'))
-        })
-        updates < 0 && tracks.map((data, i) => {
-            update(data).then(r => console.log('a piece of data deleted'))
-            deleteRecord(tracks.length + 1).then(r => console.log('arrangement completed'))
-        })
+        if (updates != 0) {
+            tracks.map((data) => {
+                update(data).then(() => console.log('a piece of data changed',updates > 0 ? '+' : '-'))
+            })
+            updates < 0 && deleteRecord(tracks.length + 1).then(() => console.log('arrangement completed'))
+        }
     }, [updates]);
 
     useEffect(() => {
@@ -272,19 +312,7 @@ const Player = () => {
                     document.title = '正在播放：'+title+' - 云端音乐播放器 - Mirai探索者'
                 })
                 .catch((e) => {
-                    let value = '';
-                    if (e.message.includes('no supported sources')) {
-                        value = '播放源出错';
-                    } else if (e.message.includes('user didn\'t interact')) {
-                        value = '当前浏览器禁止自动播放，请手动点击播放';
-                    } else {
-                        value = '出现不可预知的错误，错误信息：'+e.message;
-                    }
-                    setToastMessage({
-                        value: value,
-                        timestamp: new Date().getTime()
-                    });
-                    console.error(e.message)
+                    handlePlayError(e)
                 });
         } else {
             audioRef.current!.pause();
@@ -314,19 +342,7 @@ const Player = () => {
                     document.title = '正在播放：'+title+' - 云端音乐播放器 - Mirai探索者'
                 })
                 .catch((e) => {
-                    let value = '';
-                    if (e.message.includes('no supported sources')) {
-                        value = '播放源出错';
-                    } else if (e.message.includes('user didn\'t interact')) {
-                        value = '当前浏览器禁止自动播放，请手动点击播放';
-                    } else {
-                        value = '出现不可预知的错误，错误信息：'+e.message;
-                    }
-                    setToastMessage({
-                        value: value,
-                        timestamp: new Date().getTime()
-                    });
-                    console.error(e.message)
+                    handlePlayError(e)
                 });
         } else {
             // Set the isReady ref as true for the next pass

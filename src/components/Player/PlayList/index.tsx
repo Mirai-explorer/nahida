@@ -14,6 +14,7 @@ const PlayListWrap =
       height: 100%;
       display: block;
       transition: background-color .1s ease-out, visibility .1s ease;
+      content-visibility: auto;
 
       &.show {
         visibility: visible;

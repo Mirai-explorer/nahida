@@ -1,5 +1,7 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image'
+import logo from '@/public/assets/images/logo-full.png'
 
 interface navLinksType {
     navLinks: {
@@ -11,19 +13,8 @@ interface navLinksType {
 const HomeHeaderNav = ({ navLinks }: navLinksType) => {
     const pathname = usePathname()
     return(
-        <nav className="nav">
-            {navLinks.map((link) => {
-                const isActive = pathname === link.href
-                return (
-                    <Link
-                        className={isActive ? 'text-blue' : 'text-black'}
-                        href={link.href}
-                        key={link.name}
-                    >
-                        {link.name}
-                    </Link>
-                )
-            })}
+        <nav className="nav flex gap-4 whitespace-nowrap">
+            <Image src={logo} alt="logo image" width={170} height={40}/>
         </nav>
     )
 }
