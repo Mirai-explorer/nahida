@@ -132,7 +132,7 @@ const Player = () => {
         value: '',
         timestamp: new Date().getTime()
     });
-    const [time,setTime] = useState(0)
+    const [reduce, setReduce] = useState('')
 
     // Destructure for conciseness
     const {title, subtitle, artist, cover, src, time_length} = tracks[trackIndex];
@@ -157,12 +157,13 @@ const Player = () => {
     const onScrub = (value: number) => {
         //audioRef.current.currentTime = value;
         audioRef.current!.ontimeupdate = () => null
-        setTrackProgress(value);
+        setReduce('reduce')
+        setTrackProgress(value)
     };
 
     const onScrubEnd = (value: number) => {
         // If not already playing, start
-        console.log(value, time_length);
+        setReduce('')
         if (value < time_length / 1000) {
             audioRef.current!.currentTime = value
 
@@ -372,7 +373,7 @@ const Player = () => {
                     tracks={tracks}
                     trackIndex={trackIndex}
                     trackProgress={trackProgress}
-                    isPlaying={isPlaying}
+                    reduce={reduce}
                 />
                 <Title
                     title={title || "音乐感动生活"}

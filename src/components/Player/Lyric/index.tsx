@@ -48,9 +48,13 @@ const Waterfall =
       position: relative;
       display: grid;
       grid-auto-rows: 32px;
-      transition: transform 180ms linear;
+      transition: transform 200ms linear;
       transform: translateY(0px);
       will-change: transform;
+      
+      &.reduce {
+        transition: transform 100ms linear;
+      }
     `
 
 const Line =
@@ -60,26 +64,36 @@ const Line =
       align-items: center;
       opacity: .01;
       font-size: 16px;
+      scale: 1;
       font-weight: 500;
       width: 100%;
       white-space: nowrap;
-      overflow: scroll;
+      overflow: hidden;
       letter-spacing: 2px;
-      will-change: opacity, font-size, font-weight;
-      transition: all 200ms ease-out;
+      will-change: opacity, scale, font-weight;
       
       &.bubble {
         font-weight: 700;
         opacity: 1;
-        font-size: 20px;
+        scale: 1.25;
       }
       
       &.await {
         opacity: .6;
       }
+
+      &.bubble, &.await {
+        transition: all 250ms ease-out;
+      }
+
+      .reduce {
+        &.bubble, &.await {
+          transition: all 120ms ease-out;
+        }
+      }
     `
 
-const Lyric = ({ tracks, trackIndex, trackProgress, isPlaying }:{ tracks: Track[], trackIndex: number, trackProgress: number, isPlaying: boolean }) => {
+const Lyric = ({ tracks, trackIndex, trackProgress, reduce }:{ tracks: Track[], trackIndex: number, trackProgress: number, reduce: string }) => {
     const [number, setNumber] = useState(0);
     const target: React.RefObject<HTMLDivElement> = React.createRef<HTMLDivElement>();
     const parseLrc = (str: string) => {
@@ -128,7 +142,7 @@ const Lyric = ({ tracks, trackIndex, trackProgress, isPlaying }:{ tracks: Track[
     return (
         <LyricWrap>
             <Scroll>
-                <Waterfall ref={target}>
+                <Waterfall ref={target} className={reduce}>
                     {lyric.length ? (
                         lyric.map((item: lyricType, index : number) => {
                             return (
