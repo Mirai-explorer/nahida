@@ -156,6 +156,7 @@ const Player = () => {
 
     const onScrub = (value: number) => {
         //audioRef.current.currentTime = value;
+        audioRef.current!.ontimeupdate = () => null
         setTrackProgress(value);
     };
 
@@ -164,6 +165,7 @@ const Player = () => {
         console.log(value, time_length);
         if (value < time_length / 1000) {
             audioRef.current!.currentTime = value
+
         } else {
             audioRef.current!.currentTime = audioRef.current!.currentTime
             setToastMessage({
@@ -173,6 +175,9 @@ const Player = () => {
         }
         if (!isPlaying) {
             setIsPlaying(true);
+        }
+        audioRef.current!.ontimeupdate = () => {
+            setTrackProgress(audioRef.current!.currentTime);
         }
     };
 
@@ -340,7 +345,7 @@ const Player = () => {
     }, []);
 
     useEffect(() => {
-        audioRef.current!.ontimeupdate = e => {
+        audioRef.current!.ontimeupdate = () => {
             setTrackProgress(audioRef.current!.currentTime);
         }
         console.log(trackProgress)
