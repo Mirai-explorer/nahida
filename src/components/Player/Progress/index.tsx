@@ -68,6 +68,7 @@ const ProgressBarObject =
         border-radius: 50%; /*外观设置为圆形*/
         border: solid 0.125em rgba(205, 224, 230, 0.5); /*设置边框*/
         /*box-shadow: 0 0.125em 0.125em #181c1d; /*添加底部阴影*/
+        transition: all 0.1s linear;
       }
     `
 
@@ -79,7 +80,7 @@ const Progress = (props: propsType) => {
                     type="range"
                     name="progress-bar"
                     value={props.trackProgress}
-                    step="0.5"
+                    step="0.1"
                     min="0"
                     max={props.duration ? props.duration : `100`}
                     onChange={(e) => props.onScrub(e.target.value)}

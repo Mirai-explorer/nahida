@@ -48,7 +48,7 @@ const Waterfall =
       position: relative;
       display: grid;
       grid-auto-rows: 32px;
-      transition: transform 120ms linear;
+      transition: transform 180ms linear;
       transform: translateY(0px);
       will-change: transform;
     `
@@ -66,7 +66,7 @@ const Line =
       overflow: scroll;
       letter-spacing: 2px;
       will-change: opacity, font-size, font-weight;
-      transition: all 100ms ease;
+      transition: all 200ms ease-out;
       
       &.bubble {
         font-weight: 700;
@@ -111,7 +111,7 @@ const Lyric = ({ tracks, trackIndex, trackProgress, isPlaying }:{ tracks: Track[
         const scores : number[] = [];
         lyrics.map((lyric : lyricType) => {
             const score = time - lyric.offset;
-            if (score >= -0.3) {
+            if (score >= -0.6) {
                 scores.push(score);
             }
         });

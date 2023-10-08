@@ -132,6 +132,7 @@ const Player = () => {
         value: '',
         timestamp: new Date().getTime()
     });
+    const [time,setTime] = useState(0)
 
     // Destructure for conciseness
     const {title, subtitle, artist, cover, src, time_length} = tracks[trackIndex];
@@ -140,7 +141,7 @@ const Player = () => {
     const audioRef = useRef<HTMLAudioElement | undefined>(
         typeof Audio !== "undefined" ? new Audio(src) : undefined
     );
-    const intervalRef = useRef(0);
+
     const isReady = useRef(false);
 
     // Destructure for conciseness
@@ -153,23 +154,7 @@ const Player = () => {
     -webkit-gradient(linear, 0% 0%, 100% 0%, color-stop(${currentPercentage}, wheat), color-stop(${currentPercentage}, rgba(255,255,255,.5)))
   `;
 
-    const startTimer = () => {
-        // Clear any timers already running
-        clearInterval(intervalRef.current);
-        console.log('timer fired')
-
-        intervalRef.current = window.setInterval(() => {
-            if (audioRef.current!.ended) {
-                toNextTrack();
-            } else {
-                setTrackProgress(audioRef.current!.currentTime);
-            }
-        }, 100);
-    };
-
     const onScrub = (value: number) => {
-        // Clear any timers already running
-        clearInterval(intervalRef.current);
         //audioRef.current.currentTime = value;
         setTrackProgress(value);
     };
@@ -189,7 +174,6 @@ const Player = () => {
         if (!isPlaying) {
             setIsPlaying(true);
         }
-        startTimer();
     };
 
     const toPrevTrack = () => {
@@ -307,7 +291,6 @@ const Player = () => {
         if (isPlaying) {
             audioRef.current!.play()
                 .then(() => {
-                    startTimer();
                     setIsRotating(true);
                     document.title = '正在播放：'+title+' - 云端音乐播放器 - Mirai探索者'
                 })
@@ -333,12 +316,11 @@ const Player = () => {
     useEffect(() => {
         audioRef.current!.pause();
         audioRef.current = new Audio(src);
-        setTrackProgress(audioRef.current.currentTime);
+        setTrackProgress(audioRef.current!.currentTime);
         if (isReady.current) {
             audioRef.current.play()
                 .then(() => {
                     setIsPlaying(true);
-                    startTimer();
                     document.title = '正在播放：'+title+' - 云端音乐播放器 - Mirai探索者'
                 })
                 .catch((e) => {
@@ -348,16 +330,25 @@ const Player = () => {
             // Set the isReady ref as true for the next pass
             isReady.current = true;
         }
-        console.log("new audio fired")
     }, [trackIndex, alive]);
 
     useEffect(() => {
         // Pause and clean up on unmount
         return () => {
             audioRef.current!.pause();
-            clearInterval(intervalRef.current);
         };
     }, []);
+
+    useEffect(() => {
+        audioRef.current!.ontimeupdate = e => {
+            setTrackProgress(audioRef.current!.currentTime);
+        }
+        console.log(trackProgress)
+    }, [audioRef.current!.readyState]);
+
+    useEffect(() => {
+        audioRef.current?.ended && toNextTrack()
+    }, [audioRef.current?.ended]);
 
     const past = getTime(trackProgress);
     const _duration = getTime(duration);
