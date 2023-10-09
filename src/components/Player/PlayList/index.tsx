@@ -94,7 +94,7 @@ const PlayItem =
       min-height: 48px;
       padding: 12px;
       border-radius: .75rem;
-      transition: transform .5s ease-in-out;
+      transition: transform 200ms ease-out;
 
       &.highlight {
         background-color: #eceff1;
@@ -136,7 +136,7 @@ const PlayList = ({tracks, setTracks, trackIndex, setTrackIndex, isShowing, setI
         })) {
             if (tracks.length > 1) {
                 console.log(index+' deleted')
-                const _tracks = tracks.filter((item, num, arr) => {
+                const _tracks = tracks.filter((item, num) => {
                     return num !== index
                 })
                 _tracks.map((item, num) => {
@@ -188,18 +188,18 @@ const PlayList = ({tracks, setTracks, trackIndex, setTrackIndex, isShowing, setI
     }
 
     const onDrag = (e: React.DragEvent<HTMLDivElement>, index: number) => {
-        if (e.clientX - X > -300) {
-            target.current[index]!.style.transform = `translateX(-30px)`;
+        if (e.clientX - X > -240) {
+            target.current[index]!.style.transform = `translateX(-60px)`;
         } else {
-            target.current[index]!.style.transform = `translateX(-300px)`;
+            target.current[index]!.style.transform = `translateX(-240px)`;
         }
     }
 
     const onTouch = (e: React.TouchEvent<HTMLDivElement>, index: number) => {
-        if (e.touches[0].clientX - X > -150) {
-            target.current[index]!.style.transform = `translateX(-15px)`;
+        if (e.touches[0].clientX - X > -120) {
+            target.current[index]!.style.transform = `translateX(-30px)`;
         } else {
-            target.current[index]!.style.transform = `translateX(-150px)`;
+            target.current[index]!.style.transform = `translateX(-120px)`;
         }
     }
     const dragEnd = (e: React.DragEvent<HTMLDivElement>, index: number) => {

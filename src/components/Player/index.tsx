@@ -318,6 +318,18 @@ const Player = () => {
         }
     }, [isRotating]);
 
+    useEffect(() => {
+        if (audioRef.current?.paused) {
+            setIsPlaying(false);
+            setIsRotating(false);
+            document.title = '暂停中'+' - 云端音乐播放器 - Mirai探索者'
+        } else {
+            setIsPlaying(true)
+            setIsRotating(true);
+            document.title = '正在播放：'+title+' - 云端音乐播放器 - Mirai探索者'
+        }
+    }, [audioRef.current?.paused]);
+
     // Handles cleanup and setup when changing tracks
     useEffect(() => {
         audioRef.current!.pause();
@@ -326,8 +338,7 @@ const Player = () => {
         if (isReady.current) {
             audioRef.current.play()
                 .then(() => {
-                    setIsPlaying(true);
-                    document.title = '正在播放：'+title+' - 云端音乐播放器 - Mirai探索者'
+                    setIsPlaying(true)
                 })
                 .catch((e) => {
                     handlePlayError(e)
