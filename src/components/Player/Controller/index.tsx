@@ -30,6 +30,9 @@ const ControllerInner =
         border-style: none;
         outline: none;
         background-color: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
     `
 const Left =
@@ -38,6 +41,7 @@ const Left =
       width: 48px;
       height: 100%;
       align-items: center;
+      gap: 0.25rem;
       
       > button {
         width: 24px;
@@ -58,9 +62,6 @@ const Center =
         background: #ffffff30;
         box-shadow: 0 0 3px #00000016;
         border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
       }
 
       .prev, .next {
@@ -95,12 +96,13 @@ const setFullscreen = () => {
     document.fullscreenElement !== null ? document.exitFullscreen() : document.documentElement.requestFullscreen()
 }
 
-const Controller = ({ isPlaying, onPlayPauseClick, onPrevClick, onNextClick, onPlayListClick} : {
+const Controller = ({ isPlaying, onPlayPauseClick, onPrevClick, onNextClick, onPlayListClick, setSettingShowing} : {
     isPlaying : boolean,
     onPlayPauseClick: React.Dispatch<React.SetStateAction<boolean>>,
     onPrevClick: React.MouseEventHandler<HTMLButtonElement>,
     onNextClick: React.MouseEventHandler<HTMLButtonElement>,
-    onPlayListClick: React.Dispatch<React.SetStateAction<boolean>>
+    onPlayListClick: React.Dispatch<React.SetStateAction<boolean>>,
+    setSettingShowing: React.Dispatch<React.SetStateAction<boolean>>
 }) => (
     <ControllerWrap>
         <ControllerInner>
@@ -117,13 +119,21 @@ const Controller = ({ isPlaying, onPlayPauseClick, onPrevClick, onNextClick, onP
                 ) : (
                     <Button
                         type="button"
-                        className="random"
+                        className="single_cycle"
                         onClick={() => onPlayPauseClick(true)}
-                        aria-label="Random"
+                        aria-label="SingleCycle"
                     >
                         <SingleCycle />
                     </Button>
                 )}
+                <Button
+                    type="button"
+                    className="random"
+                    onClick={() => setSettingShowing(true)}
+                    aria-label="Random"
+                >
+                    <Random />
+                </Button>
             </Left>
             <Center>
                 <Button

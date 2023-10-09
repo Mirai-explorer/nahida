@@ -23,6 +23,7 @@ const SearchWrap =
       left: 0;
       width: 100%;
       height: 100%;
+      -webkit-backdrop-filter: blur(8px) contrast(0.5);
       backdrop-filter: blur(8px) contrast(0.5);
       background: rgba(255,255,255,.3);
       z-index: 999;

@@ -19,6 +19,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {Track, fetchMusicSource, getTime} from "./utils";
 import PlayList from "@/components/Player/PlayList";
+import Setting from "@/components/Player/Setting";
 
 initDB(DBConfig);
 
@@ -100,7 +101,7 @@ const Layout =
       margin: 0;
       padding: 0 5%;
       color: white;
-      -webikt-backdrop-filter: blur(32px) brightness(0.8);
+      -webkit-backdrop-filter: blur(32px) brightness(0.8);
       backdrop-filter: blur(32px) brightness(0.8);
       transition: scale .2s cubic-bezier(.42,.19,.62,1);
       
@@ -127,6 +128,7 @@ const Player = () => {
     const [alive, setAlive] = useState(false);
     const [updates, setUpdate] = useState(0);
     const [isShowing, setIsShowing] = useState(false);
+    const [settingShowing, setSettingShowing] = useState(false);
     const [playListShowing, setPlayListShowing] = useState(false);
     const [toastMessage, setToastMessage] = useState({
         value: '',
@@ -259,7 +261,7 @@ const Player = () => {
         let value: string;
         if (e.message.includes('no supported sources')) {
             value = '播放源出错';
-        } else if (e.message.includes('user didn\'t interact')) {
+        } else if (e.message.includes('user didn\'t interact') || e.message.includes('user denied permission')) {
             value = '当前浏览器禁止自动播放，请手动点击播放';
         } else {
             value = '出现不可预知的错误，错误信息：'+e.message;
@@ -407,6 +409,7 @@ const Player = () => {
                     onNextClick={toNextTrack}
                     onPlayPauseClick={setIsPlaying}
                     onPlayListClick={setPlayListShowing}
+                    setSettingShowing={setSettingShowing}
                 />
                 <Search
                     isShowing={isShowing}
@@ -417,6 +420,10 @@ const Player = () => {
                     setUpdate={setUpdate}
                     toastMessage={toastMessage}
                     setToastMessage={setToastMessage}
+                />
+                <Setting
+                    isShowing={settingShowing}
+                    setIsShowing={setSettingShowing}
                 />
             </Layout>
             <ToastContainer />
